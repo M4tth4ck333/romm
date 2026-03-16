@@ -8,7 +8,7 @@ from handler.database import db_device_handler
 from logger.formatter import CYAN
 from logger.formatter import highlight as hl
 from logger.logger import log
-from models.device import Device
+from models.device import KNOWN_DEVICES, Device
 from models.user import User
 
 
@@ -38,31 +38,35 @@ def create_or_find_web_device(request: Request, user: User) -> Device:
     Uses parsed browser/OS family + client IP as fingerprint to avoid
     creating duplicate devices for the same browser.
     """
+    device_type = KNOWN_DEVICES["web"]
+
     user_agent = request.headers.get("user-agent", "")
     platform = _parse_platform(user_agent)
-    client_host = request.client.host if request.client else None
-    ip_address = request.headers.get("x-forwarded-for", client_host)
-    # TODO: differentiate name vs platform vs client better
+
+    hostname = request.client.host if request.client else None
+    ip_address = request.headers.get("x-forwarded-for", None)
+
     existing = db_device_handler.get_device_by_fingerprint(
         user_id=user.id,
         mac_address=None,
-        hostname=ip_address,
+        hostname=hostname,
+        ip_address=ip_address,
         platform=platform,
     )
     if existing:
         db_device_handler.update_last_seen(device_id=existing.id, user_id=user.id)
         return existing
 
-    now = datetime.now(timezone.utc)
     device = Device(
         id=str(uuid.uuid4()),
         user_id=user.id,
-        name="Web Browser",
-        platform=platform,
-        client="web",
-        hostname=ip_address,
+        name=platform,
+        platform=device_type.platform,
+        client=device_type.client,
+        sync_mode=device_type.sync_mode,
+        hostname=hostname,
         ip_address=ip_address,
-        last_seen=now,
+        last_seen=datetime.now(timezone.utc),
     )
     device = db_device_handler.add_device(device)
     log.info(

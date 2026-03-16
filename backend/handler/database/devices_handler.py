@@ -36,6 +36,7 @@ class DBDevicesHandler(DBBaseHandler):
         user_id: int,
         mac_address: str | None = None,
         hostname: str | None = None,
+        ip_address: str | None = None,
         platform: str | None = None,
         session: Session = None,  # type: ignore
     ) -> Device | None:
@@ -47,6 +48,13 @@ class DBDevicesHandler(DBBaseHandler):
             )
             if device:
                 return device
+
+        if ip_address and platform:
+            return session.scalar(
+                select(Device)
+                .filter_by(user_id=user_id, ip_address=ip_address, platform=platform)
+                .limit(1)
+            )
 
         if hostname and platform:
             return session.scalar(
