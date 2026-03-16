@@ -48,14 +48,7 @@ def upgrade() -> None:
         sa.Column("user_id", sa.Integer(), nullable=False),
         sa.Column(
             "status",
-            sa.Enum(
-                "PENDING",
-                "IN_PROGRESS",
-                "COMPLETED",
-                "FAILED",
-                "CANCELLED",
-                name="syncsessionstatus",
-            ),
+            sync_session_status_enum,
             nullable=False,
             server_default="PENDING",
         ),
