@@ -8,7 +8,6 @@ from fastapi.testclient import TestClient
 
 from endpoints.roms import upload as upload_endpoint
 from models.platform import Platform
-from models.user import User
 
 
 @pytest.fixture

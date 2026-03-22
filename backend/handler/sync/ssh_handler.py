@@ -20,6 +20,7 @@ from pathlib import Path
 from typing import Any
 
 import asyncssh
+from anyio import open_file
 
 from config import SYNC_SSH_KEYS_PATH
 from logger.logger import log
@@ -185,8 +186,8 @@ class SSHSyncHandler:
 
         # Compute hash
         hash_obj = hashlib.md5(usedforsecurity=False)
-        with open(local_path, "rb") as f:
-            while chunk := f.read(8192):
+        async with await open_file(local_path, "rb") as f:
+            while chunk := await f.read(8192):
                 hash_obj.update(chunk)
 
         return local_path, hash_obj.hexdigest()

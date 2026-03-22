@@ -2,8 +2,6 @@
 
 from datetime import datetime, timezone
 
-import pytest
-
 from handler.sync.comparison import SyncComparisonResult, compare_save_state
 
 

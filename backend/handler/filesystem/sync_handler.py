@@ -105,6 +105,8 @@ class FSSyncHandler(FSHandler):
             # Validate the file is within our base path
             try:
                 path.resolve().relative_to(self.base_path.resolve())
-            except ValueError:
-                raise ValueError(f"Path {full_path} is outside the sync base directory")
+            except ValueError as e:
+                raise ValueError(
+                    f"Path {full_path} is outside the sync base directory"
+                ) from e
             path.unlink()

@@ -8,14 +8,11 @@ from fastapi import status
 from handler.database import (
     db_device_handler,
     db_device_save_sync_handler,
-    db_save_handler,
     db_sync_session_handler,
 )
 from models.assets import Save
 from models.device import Device, SyncMode
-from models.platform import Platform
 from models.rom import Rom
-from models.sync_session import SyncSession, SyncSessionStatus
 from models.user import User
 
 

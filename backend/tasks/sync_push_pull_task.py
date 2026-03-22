@@ -8,6 +8,9 @@ import os
 from datetime import datetime, timezone
 from typing import Any
 
+from anyio import Path as AnyioPath
+from anyio import open_file
+
 from config import ENABLE_SYNC_PUSH_PULL, SYNC_PUSH_PULL_CRON
 from handler.database import (
     db_device_handler,
@@ -278,8 +281,8 @@ async def _process_remote_save(
             log.info(
                 f"Push-pull: pulling {hl(remote_save.file_name)} from device {device.id}"
             )
-            with open(local_path, "rb") as f:
-                file_data = f.read()
+            async with await open_file(local_path, "rb") as f:
+                file_data = await f.read()
             await fs_asset_handler.write_file(
                 file=file_data,
                 path=matched_save.file_path,
@@ -324,7 +327,7 @@ async def _process_remote_save(
             return "conflict"
 
     finally:
-        if os.path.exists(local_path):
+        if await AnyioPath(local_path).exists():
             os.unlink(local_path)
 
     return "skipped"
