@@ -56,22 +56,17 @@ class PegasusExporter:
         Returns a dict mapping Pegasus asset key to the absolute source file path.
         """
         assets: dict[str, Path] = {}
-        base = fs_resource_handler.base_path
 
         if rom.path_cover_l:
-            p = base / rom.path_cover_l
-            if p.is_file():
-                assets["box_front"] = p
+            assets["box_front"] = fs_resource_handler.validate_path(rom.path_cover_l)
 
         if rom.path_screenshots:
-            p = base / rom.path_screenshots[0]
-            if p.is_file():
-                assets["screenshot"] = p
+            assets["screenshot"] = fs_resource_handler.validate_path(
+                rom.path_screenshots[0]
+            )
 
         if rom.path_video:
-            p = base / rom.path_video
-            if p.is_file():
-                assets["video"] = p
+            assets["video"] = fs_resource_handler.validate_path(rom.path_video)
 
         # Extended media from screenscraper / gamelist metadata
         ss = rom.ss_metadata or {}
@@ -92,10 +87,8 @@ class PegasusExporter:
                 continue
             for candidate in candidates:
                 if candidate:
-                    p = base / candidate
-                    if p.is_file():
-                        assets[pegasus_key] = p
-                        break
+                    assets[pegasus_key] = fs_resource_handler.validate_path(candidate)
+                    break
 
         return assets
 

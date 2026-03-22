@@ -1,5 +1,7 @@
 import api from "@/services/api";
 
+export const exportApi = api;
+
 async function exportGamelistXml({ platformIds }: { platformIds: number[] }) {
   const params = new URLSearchParams();
   platformIds.forEach((id) => params.append("platform_ids", id.toString()));
@@ -13,6 +15,7 @@ async function exportPegasus({ platformIds }: { platformIds: number[] }) {
 }
 
 export default {
+  exportApi,
   exportGamelistXml,
   exportPegasus,
 };
