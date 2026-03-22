@@ -35,6 +35,7 @@ from endpoints.gamelist import router as gamelist_router
 from endpoints.heartbeat import router as heartbeat_router
 from endpoints.netplay import router as netplay_router
 from endpoints.platform import router as platform_router
+from endpoints.play_sessions import router as play_sessions_router
 from endpoints.raw import router as raw_router
 from endpoints.roms import router as rom_router
 from endpoints.saves import router as saves_router
@@ -126,6 +127,7 @@ app.include_router(auth_router, prefix="/api")
 app.include_router(user_router, prefix="/api")
 app.include_router(client_tokens_router, prefix="/api")
 app.include_router(device_router, prefix="/api")
+app.include_router(play_sessions_router, prefix="/api")
 app.include_router(platform_router, prefix="/api")
 app.include_router(rom_router, prefix="/api")
 app.include_router(search_router, prefix="/api")

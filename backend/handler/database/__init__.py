@@ -4,6 +4,7 @@ from .device_save_sync_handler import DBDeviceSaveSyncHandler
 from .devices_handler import DBDevicesHandler
 from .firmware_handler import DBFirmwareHandler
 from .platforms_handler import DBPlatformsHandler
+from .play_sessions_handler import DBPlaySessionsHandler
 from .roms_handler import DBRomsHandler
 from .saves_handler import DBSavesHandler
 from .screenshots_handler import DBScreenshotsHandler
@@ -17,6 +18,7 @@ db_device_handler = DBDevicesHandler()
 db_device_save_sync_handler = DBDeviceSaveSyncHandler()
 db_firmware_handler = DBFirmwareHandler()
 db_platform_handler = DBPlatformsHandler()
+db_play_session_handler = DBPlaySessionsHandler()
 db_rom_handler = DBRomsHandler()
 db_save_handler = DBSavesHandler()
 db_screenshot_handler = DBScreenshotsHandler()
