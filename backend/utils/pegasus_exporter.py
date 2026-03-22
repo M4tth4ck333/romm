@@ -1,5 +1,5 @@
 import shutil
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 
 from fastapi import Request
@@ -33,7 +33,7 @@ class PegasusExporter:
 
     def _format_release_date(self, timestamp: int) -> str:
         """Format release date to YYYY-MM-DD format"""
-        return datetime.fromtimestamp(timestamp / 1000).strftime("%Y-%m-%d")
+        return datetime.fromtimestamp(timestamp / 1000, tz=UTC).strftime("%Y-%m-%d")
 
     def _format_rating(self, average_rating: float) -> str:
         """Format rating as percentage (0-100%). Input is on 0-10 scale."""

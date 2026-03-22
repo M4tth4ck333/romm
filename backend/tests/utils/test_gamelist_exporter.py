@@ -143,9 +143,7 @@ def test_export_gamelist_xml_release_date(platform_with_roms):
 
     release_date = game.find("releasedate")
     assert release_date is not None
-    assert release_date.text is not None
-    # Should be in YYYYMMDDTHHMMSS format
-    assert release_date.text.startswith("19920623")
+    assert release_date.text == "19920623T120000"
 
 
 def test_export_gamelist_xml_minimal_rom(platform_with_minimal_rom):

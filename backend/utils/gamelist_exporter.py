@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import UTC, datetime
 from xml.etree.ElementTree import (  # trunk-ignore(bandit/B405)
     Element,
     SubElement,
@@ -23,7 +23,9 @@ class GamelistExporter:
 
     def _format_release_date(self, timestamp: int) -> str:
         """Format release date to YYYYMMDDTHHMMSS format"""
-        return datetime.fromtimestamp(timestamp / 1000).strftime("%Y%m%dT%H%M%S")
+        return datetime.fromtimestamp(timestamp / 1000, tz=UTC).strftime(
+            "%Y%m%dT%H%M%S"
+        )
 
     def _create_game_element(self, rom: Rom, request: Request | None) -> Element:
         """Create a <game> element for a ROM"""
@@ -180,7 +182,7 @@ class GamelistExporter:
         root = Element("gameList")
 
         for rom in roms:
-            if rom and not rom.missing_from_fs and rom.fs_name != "gamelist.xml":
+            if rom and not rom.missing_from_fs:
                 game_element = self._create_game_element(rom, request=request)
                 root.append(game_element)
 

@@ -173,18 +173,22 @@ class FSHandler:
 
     @asynccontextmanager
     async def _atomic_write(self, target_path: Path):
-        """Context manager for atomic file writing using a system temp file."""
-        fd, temp_path_str = tempfile.mkstemp()
+        """Context manager for atomic file writing.
+
+        Creates the temp file in the same directory as the target so that
+        os.rename is always an atomic same-filesystem operation.
+        """
+        fd, temp_path_str = tempfile.mkstemp(
+            dir=str(target_path.parent), prefix=".romm_tmp_"
+        )
         temp_path = Path(temp_path_str)
         os.close(fd)
 
         try:
             yield temp_path
-            # Move to final location
-            shutil.move(str(temp_path), str(target_path))
+            os.replace(str(temp_path), str(target_path))
 
         except Exception:
-            # Clean up temporary file on error
             async_temp = AnyioPath(temp_path)
             if await async_temp.exists():
                 await async_temp.unlink()

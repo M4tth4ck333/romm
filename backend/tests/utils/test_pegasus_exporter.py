@@ -151,7 +151,7 @@ class TestExportMetadata:
         assert game["tag"] == "Retro"
         assert game["description"] == "A classic platformer game."
         assert game["rating"] == "92%"
-        assert isinstance(game["release"], str) and game["release"].startswith("1992-")
+        assert game["release"] == "1992-06-23"
         assert game["x-region"] == "USA"
         assert game["x-language"] == "en"
         assert "x-romm-id" in game
