@@ -158,6 +158,10 @@ class GamelistExporter:
                 SubElement(game, "title_screen").text = (
                     f"{FRONTEND_RESOURCES_PATH}/{rom.ss_metadata["title_screen"]}"
                 )
+            if rom.ss_metadata.get("bezel_path"):
+                SubElement(game, "bezel").text = (
+                    f"{FRONTEND_RESOURCES_PATH}/{rom.ss_metadata["bezel_path"]}"
+                )
 
         if rom.gamelist_metadata:
             if rom.gamelist_metadata.get("box3d"):
