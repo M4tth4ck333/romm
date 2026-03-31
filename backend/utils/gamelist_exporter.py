@@ -52,8 +52,9 @@ class GamelistExporter:
             SubElement(game, "desc").text = rom.summary
 
         # Media files
+        config = cm.get_config()
         thumbnail_path: str | None = None
-        thumbnail_option = cm.config.GAMELIST_THUMBNAIL_MEDIA
+        thumbnail_option = config.GAMELIST_THUMBNAIL_MEDIA
         if thumbnail_option == "box3d":
             if rom.ss_metadata and rom.ss_metadata.get("box3d_path"):
                 thumbnail_path = f"{FRONTEND_RESOURCES_PATH}/{rom.ss_metadata['box3d_path']}"
@@ -88,7 +89,7 @@ class GamelistExporter:
             )
 
         image_path: str | None = None
-        image_option = cm.config.GAMELIST_IMAGE_MEDIA
+        image_option = config.GAMELIST_IMAGE_MEDIA
         if image_option == "title_screen":
             if rom.ss_metadata and rom.ss_metadata.get("title_screen_path"):
                 image_path = f"{FRONTEND_RESOURCES_PATH}/{rom.ss_metadata['title_screen_path']}"
