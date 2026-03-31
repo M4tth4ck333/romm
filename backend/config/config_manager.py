@@ -633,6 +633,14 @@ class ConfigManager:
                 "media": self.config.SCAN_MEDIA,
                 "export_gamelist": self.config.GAMELIST_AUTO_EXPORT_ON_SCAN,
             },
+            "export": {
+                "gamelist": {
+                    "media": {
+                        "thumbnail": self.config.GAMELIST_THUMBNAIL_MEDIA,
+                        "image": self.config.GAMELIST_IMAGE_MEDIA,
+                    }
+                }
+            },
         }
 
         try:

@@ -36,6 +36,8 @@ def test_config(client):
     assert config.get("EXCLUDED_MULTI_PARTS_FILES") == DEFAULT_EXCLUDED_FILES
     assert config.get("PLATFORMS_BINDING") == {}
     assert not config.get("SKIP_HASH_CALCULATION")
+    assert config.get("GAMELIST_THUMBNAIL_MEDIA") == "cover"
+    assert config.get("GAMELIST_IMAGE_MEDIA") == "screenshot"
 
 
 def test_add_platform_binding_payload_shape(client, access_token: str):
