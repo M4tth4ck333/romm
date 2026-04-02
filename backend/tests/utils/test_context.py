@@ -1,8 +1,8 @@
+from config import has_proxy_env
 from utils.context import (
     create_aiohttp_session,
     create_httpx_async_client,
     create_httpx_client,
-    has_proxy_env,
 )
 
 
@@ -30,8 +30,8 @@ class TestProxyAwareHttpClients:
 
         assert has_proxy_env() is False
 
-    async def test_create_aiohttp_session_uses_proxy_env(self, monkeypatch):
-        monkeypatch.setenv("HTTP_PROXY", "http://proxy.internal:8080")
+    async def test_create_aiohttp_session_uses_config_proxy_env(self, monkeypatch):
+        monkeypatch.setattr("utils.context.has_proxy_env", lambda: True)
 
         session = create_aiohttp_session()
 
@@ -40,8 +40,8 @@ class TestProxyAwareHttpClients:
         finally:
             await session.close()
 
-    async def test_create_httpx_clients_use_proxy_env(self, monkeypatch):
-        monkeypatch.setenv("HTTPS_PROXY", "http://proxy.internal:8443")
+    async def test_create_httpx_clients_use_config_proxy_env(self, monkeypatch):
+        monkeypatch.setattr("utils.context.has_proxy_env", lambda: True)
 
         async_client = create_httpx_async_client()
         client = create_httpx_client()

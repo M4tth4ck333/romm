@@ -1,4 +1,3 @@
-import os
 from collections.abc import AsyncGenerator, Awaitable, Callable
 from contextlib import asynccontextmanager
 from contextvars import ContextVar, Token
@@ -6,26 +5,13 @@ from typing import TypeVar
 
 import aiohttp
 import httpx
+from config import has_proxy_env
 from fastapi import Request, Response
 
 _T = TypeVar("_T")
 
 ctx_aiohttp_session: ContextVar[aiohttp.ClientSession] = ContextVar("aiohttp_session")
 ctx_httpx_client: ContextVar[httpx.AsyncClient] = ContextVar("httpx_client")
-
-
-def has_proxy_env() -> bool:
-    return any(
-        os.environ.get(var)
-        for var in (
-            "HTTP_PROXY",
-            "HTTPS_PROXY",
-            "NO_PROXY",
-            "http_proxy",
-            "https_proxy",
-            "no_proxy",
-        )
-    )
 
 
 def create_aiohttp_session() -> aiohttp.ClientSession:
