@@ -10,7 +10,7 @@ from config import HLTB_API_ENABLED
 from handler.metadata.base_handler import UniversalPlatformSlug as UPS
 from logger.logger import log
 from utils import get_version
-from utils.context import ctx_httpx_client
+from utils.context import create_httpx_client, ctx_httpx_client
 
 from .base_handler import BaseRom, MetadataHandler
 
@@ -199,7 +199,7 @@ class HLTBHandler(MetadataHandler):
             return
 
         try:
-            with httpx.Client() as client:
+            with create_httpx_client() as client:
                 response = client.get(GITHUB_FILE_URL, timeout=10)
                 response.raise_for_status()
                 self.search_url = response.text.strip()
@@ -218,7 +218,7 @@ class HLTBHandler(MetadataHandler):
         params = {"t": int(time.time())}
 
         try:
-            with httpx.Client() as client:
+            with create_httpx_client() as client:
                 response = client.get(
                     self.search_init_url,
                     params=params,

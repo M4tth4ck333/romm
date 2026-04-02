@@ -239,3 +239,15 @@ SENTRY_DSN: Final[str | None] = _get_env("SENTRY_DSN")
 
 # TESTING
 IS_PYTEST_RUN: Final = bool(_get_env("PYTEST_VERSION"))
+
+
+# PROXY
+def has_proxy_env() -> bool:
+    return any(
+        _get_env(var)
+        for var in (
+            "HTTP_PROXY",
+            "HTTPS_PROXY",
+            "NO_PROXY",
+        )
+    )
