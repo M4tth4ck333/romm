@@ -17,12 +17,12 @@ class TestFSPlatformsHandler:
     @pytest.fixture
     def config(self):
         return Config(
-            EXCLUDED_PLATFORMS=["romm", "excluded_platform"],
-            EXCLUDED_SINGLE_EXT=["tmp"],
-            EXCLUDED_SINGLE_FILES=[],
-            EXCLUDED_MULTI_FILES=[],
-            EXCLUDED_MULTI_PARTS_EXT=[],
-            EXCLUDED_MULTI_PARTS_FILES=[],
+            EXCLUDED_PLATFORMS={"romm", "excluded_platform"},
+            EXCLUDED_SINGLE_EXT={"tmp"},
+            EXCLUDED_SINGLE_FILES=set(),
+            EXCLUDED_MULTI_FILES=set(),
+            EXCLUDED_MULTI_PARTS_EXT=set(),
+            EXCLUDED_MULTI_PARTS_FILES=set(),
             PLATFORMS_BINDING={},
             PLATFORMS_VERSIONS={},
             ROMS_FOLDER_NAME="roms",
@@ -32,12 +32,12 @@ class TestFSPlatformsHandler:
     @pytest.fixture
     def config_custom_folder(self):
         return Config(
-            EXCLUDED_PLATFORMS=[],
-            EXCLUDED_SINGLE_EXT=[],
-            EXCLUDED_SINGLE_FILES=[],
-            EXCLUDED_MULTI_FILES=[],
-            EXCLUDED_MULTI_PARTS_EXT=[],
-            EXCLUDED_MULTI_PARTS_FILES=[],
+            EXCLUDED_PLATFORMS=set(),
+            EXCLUDED_SINGLE_EXT=set(),
+            EXCLUDED_SINGLE_FILES=set(),
+            EXCLUDED_MULTI_FILES=set(),
+            EXCLUDED_MULTI_PARTS_EXT=set(),
+            EXCLUDED_MULTI_PARTS_FILES=set(),
             PLATFORMS_BINDING={},
             PLATFORMS_VERSIONS={},
             ROMS_FOLDER_NAME="ROMS",
@@ -194,7 +194,7 @@ class TestFSPlatformsHandler:
         with patch(
             "handler.filesystem.platforms_handler.cm.get_config", return_value=config
         ):
-            config.EXCLUDED_PLATFORMS = ["psx"]
+            config.EXCLUDED_PLATFORMS = {"psx"}
             result = await handler.get_platforms()
 
             assert "n64" in result

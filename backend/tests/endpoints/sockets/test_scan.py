@@ -263,7 +263,7 @@ class TestGetPico8CoverUrl:
             fs_name="mygame.p8.png",
             fs_path="pico/roms",
         )
-        expected = f"file://{Path(LIBRARY_BASE_PATH).resolve() / 'pico/roms' / 'mygame.p8.png'}"
+        expected = f"file://pico/roms/mygame.p8.png"
         assert url == expected
 
     def test_returns_none_for_non_pico8_platform(self, handler: FSRomsHandler):

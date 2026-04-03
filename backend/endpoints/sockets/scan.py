@@ -413,7 +413,7 @@ async def _identify_rom(
     )
 
     # Handle special media files from Screenscraper
-    if _added_rom.ss_metadata:
+    if _added_rom.ss_metadata and MetadataSource.SS in metadata_sources:
         preferred_media_types = get_preferred_media_types()
         for media_type in preferred_media_types:
             if _added_rom.ss_metadata.get(f"{media_type.value}_path"):
@@ -423,7 +423,7 @@ async def _identify_rom(
                 )
 
     # Handle special media files from ES-DE gamelist.xml
-    if _added_rom.gamelist_metadata:
+    if _added_rom.gamelist_metadata and MetadataSource.GAMELIST in metadata_sources:
         preferred_media_types = get_preferred_media_types()
         for media_type in preferred_media_types:
             if _added_rom.gamelist_metadata.get(f"{media_type.value}_path"):
@@ -433,7 +433,7 @@ async def _identify_rom(
                 )
 
     # Store normal and locked badges
-    if _added_rom.ra_metadata:
+    if _added_rom.ra_metadata and MetadataSource.RA in metadata_sources:
         for ach in _added_rom.ra_metadata.get("achievements", []):
             badge_url_lock = ach.get("badge_url_lock", None)
             badge_path_lock = ach.get("badge_path_lock", None)

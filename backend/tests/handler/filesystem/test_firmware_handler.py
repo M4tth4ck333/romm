@@ -22,12 +22,12 @@ class TestFSFirmwareHandler:
     @pytest.fixture
     def config(self):
         return Config(
-            EXCLUDED_PLATFORMS=[],
-            EXCLUDED_SINGLE_EXT=["tmp"],
-            EXCLUDED_SINGLE_FILES=[],
-            EXCLUDED_MULTI_FILES=[],
-            EXCLUDED_MULTI_PARTS_EXT=[],
-            EXCLUDED_MULTI_PARTS_FILES=[],
+            EXCLUDED_PLATFORMS=set(),
+            EXCLUDED_SINGLE_EXT={"tmp"},
+            EXCLUDED_SINGLE_FILES=set(),
+            EXCLUDED_MULTI_FILES=set(),
+            EXCLUDED_MULTI_PARTS_EXT=set(),
+            EXCLUDED_MULTI_PARTS_FILES=set(),
             PLATFORMS_BINDING={},
             PLATFORMS_VERSIONS={},
             ROMS_FOLDER_NAME="roms",
