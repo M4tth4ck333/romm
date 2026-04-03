@@ -387,7 +387,7 @@ router.beforeEach(async (to, _from, next) => {
       return next({
         name: ROUTES.LOGIN,
         query: {
-          next: to.query.next ?? (to.path !== "/login" ? to.fullPath : "/"),
+          next: to.query.next ?? to.fullPath,
         },
       });
     }
