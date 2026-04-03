@@ -1483,19 +1483,19 @@ async def delete_roms(
                         await fs_rom_handler.remove_file(file_path=rom_path)
                         # Clean up empty parent directory if it becomes empty
                         parent = full_path.parent
-                        try:
-                            if (
-                                parent != fs_rom_handler.base_path
-                                and parent.is_dir()
-                                and not any(parent.iterdir())
-                            ):
+                        if (
+                            parent != fs_rom_handler.base_path
+                            and parent.is_dir()
+                            and not any(parent.iterdir())
+                        ):
+                            try:
                                 await fs_rom_handler.remove_directory(
                                     str(parent.relative_to(fs_rom_handler.base_path))
                                 )
-                        except OSError as dir_err:
-                            log.warning(
-                                f"Couldn't clean up empty parent directory for {hl(rom.fs_name)}: {dir_err}"
-                            )
+                            except OSError as dir_err:
+                                log.warning(
+                                    f"Couldn't clean up empty parent directory for {hl(rom.fs_name)}: {dir_err}"
+                                )
                 except FileNotFoundError:
                     error = f"Rom file {hl(rom.fs_name)} not found for platform {hl(rom.platform_display_name, color=BLUE)}[{hl(rom.platform_slug)}]"
                     log.error(error)

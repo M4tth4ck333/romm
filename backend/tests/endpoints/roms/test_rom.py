@@ -191,8 +191,7 @@ def test_delete_roms_from_fs_flat_cleans_empty_parent(
 
     mock_path = MagicMock(spec=Path)
     mock_path.is_dir.return_value = False
-    # Parent is not the base_path, is a dir, and is empty
-    mock_path.parent.__ne__ = lambda self, other: True
+    # Parent is not the base_path (a MagicMock will not equal a real Path), is a dir, and is empty
     mock_path.parent.is_dir.return_value = True
     mock_path.parent.__iter__ = lambda self: iter([])  # empty directory
     mock_validate_path.return_value = mock_path
