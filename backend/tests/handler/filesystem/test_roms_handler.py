@@ -26,7 +26,7 @@ class TestFSRomsHandler:
     @pytest.fixture
     def config(self):
         return Config(
-            EXCLUDED_PLATFORMS=set(),
+            EXCLUDED_PLATFORMS=[],
             EXCLUDED_SINGLE_EXT={"tmp"},
             EXCLUDED_SINGLE_FILES={"excluded_test.tmp"},
             EXCLUDED_MULTI_FILES={"excluded_multi"},
@@ -107,12 +107,12 @@ class TestFSRomsHandler:
             m.setattr(
                 "handler.filesystem.roms_handler.cm.get_config",
                 lambda: Config(
-                    EXCLUDED_PLATFORMS=set(),
-                    EXCLUDED_SINGLE_EXT=set(),
-                    EXCLUDED_SINGLE_FILES=set(),
-                    EXCLUDED_MULTI_FILES=set(),
-                    EXCLUDED_MULTI_PARTS_EXT=set(),
-                    EXCLUDED_MULTI_PARTS_FILES=set(),
+                    EXCLUDED_PLATFORMS=[],
+                    EXCLUDED_SINGLE_EXT=[],
+                    EXCLUDED_SINGLE_FILES=[],
+                    EXCLUDED_MULTI_FILES=[],
+                    EXCLUDED_MULTI_PARTS_EXT=[],
+                    EXCLUDED_MULTI_PARTS_FILES=[],
                     PLATFORMS_BINDING={},
                     PLATFORMS_VERSIONS={},
                     ROMS_FOLDER_NAME="roms",
@@ -134,12 +134,12 @@ class TestFSRomsHandler:
             m.setattr(
                 "handler.filesystem.roms_handler.cm.get_config",
                 lambda: Config(
-                    EXCLUDED_PLATFORMS=set(),
-                    EXCLUDED_SINGLE_EXT=set(),
-                    EXCLUDED_SINGLE_FILES=set(),
-                    EXCLUDED_MULTI_FILES=set(),
-                    EXCLUDED_MULTI_PARTS_EXT=set(),
-                    EXCLUDED_MULTI_PARTS_FILES=set(),
+                    EXCLUDED_PLATFORMS=[],
+                    EXCLUDED_SINGLE_EXT=[],
+                    EXCLUDED_SINGLE_FILES=[],
+                    EXCLUDED_MULTI_FILES=[],
+                    EXCLUDED_MULTI_PARTS_EXT=[],
+                    EXCLUDED_MULTI_PARTS_FILES=[],
                     PLATFORMS_BINDING={},
                     PLATFORMS_VERSIONS={},
                     ROMS_FOLDER_NAME="roms",
@@ -237,12 +237,12 @@ class TestFSRomsHandler:
         """Test exclude_multi_roms with no exclusions"""
         roms = ["Game1", "Game2", "Game3"]
         config = Config(
-            EXCLUDED_PLATFORMS=set(),
-            EXCLUDED_SINGLE_EXT=set(),
-            EXCLUDED_SINGLE_FILES=set(),
-            EXCLUDED_MULTI_FILES=set(),
-            EXCLUDED_MULTI_PARTS_EXT=set(),
-            EXCLUDED_MULTI_PARTS_FILES=set(),
+            EXCLUDED_PLATFORMS=[],
+            EXCLUDED_SINGLE_EXT=[],
+            EXCLUDED_SINGLE_FILES=[],
+            EXCLUDED_MULTI_FILES=[],
+            EXCLUDED_MULTI_PARTS_EXT=[],
+            EXCLUDED_MULTI_PARTS_FILES=[],
             PLATFORMS_BINDING={},
             PLATFORMS_VERSIONS={},
             ROMS_FOLDER_NAME="roms",

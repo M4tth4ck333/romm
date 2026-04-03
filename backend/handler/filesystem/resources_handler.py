@@ -275,7 +275,6 @@ class FSResourcesHandler(FSHandler):
                 return None
         else:
             # Handle HTTP URLs
-            # Validate  to prevent SSRF attacks
             validate_url_for_http_request(url_screenhot, "url_screenshot")
 
             httpx_client = ctx_httpx_client.get()

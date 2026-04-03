@@ -101,12 +101,12 @@ class NetplayICEServer(TypedDict):
 class Config:
     CONFIG_FILE_MOUNTED: bool
     CONFIG_FILE_WRITABLE: bool
-    EXCLUDED_PLATFORMS: set[str]
-    EXCLUDED_SINGLE_EXT: set[str]
-    EXCLUDED_SINGLE_FILES: set[str]
-    EXCLUDED_MULTI_FILES: set[str]
-    EXCLUDED_MULTI_PARTS_EXT: set[str]
-    EXCLUDED_MULTI_PARTS_FILES: set[str]
+    EXCLUDED_PLATFORMS: list[str]
+    EXCLUDED_SINGLE_EXT: list[str]
+    EXCLUDED_SINGLE_FILES: list[str]
+    EXCLUDED_MULTI_FILES: list[str]
+    EXCLUDED_MULTI_PARTS_EXT: list[str]
+    EXCLUDED_MULTI_PARTS_FILES: list[str]
     GAMELIST_AUTO_EXPORT_ON_SCAN: bool
     PLATFORMS_BINDING: dict[str, str]
     PLATFORMS_VERSIONS: dict[str, str]
@@ -225,56 +225,68 @@ class ConfigManager:
         self.config = Config(
             CONFIG_FILE_MOUNTED=self._config_file_mounted,
             CONFIG_FILE_WRITABLE=self._config_file_writable,
-            EXCLUDED_PLATFORMS={
-                *DEFAULT_EXCLUDED_DIRS,
-                *pydash.get(self._raw_config, "exclude.platforms", []),
-            },
-            EXCLUDED_SINGLE_EXT={
-                *(e.lower() for e in DEFAULT_EXCLUDED_EXTENSIONS),
-                *(
-                    e.lower()
-                    for e in pydash.get(
+            EXCLUDED_PLATFORMS=sorted(
+                {
+                    *DEFAULT_EXCLUDED_DIRS,
+                    *pydash.get(self._raw_config, "exclude.platforms", []),
+                }
+            ),
+            EXCLUDED_SINGLE_EXT=sorted(
+                {
+                    *(e.lower() for e in DEFAULT_EXCLUDED_EXTENSIONS),
+                    *(
+                        e.lower()
+                        for e in pydash.get(
+                            self._raw_config,
+                            "exclude.roms.single_file.extensions",
+                            [],
+                        )
+                    ),
+                }
+            ),
+            EXCLUDED_SINGLE_FILES=sorted(
+                {
+                    *DEFAULT_EXCLUDED_FILES,
+                    *pydash.get(
                         self._raw_config,
-                        "exclude.roms.single_file.extensions",
+                        "exclude.roms.single_file.names",
                         [],
-                    )
-                ),
-            },
-            EXCLUDED_SINGLE_FILES={
-                *DEFAULT_EXCLUDED_FILES,
-                *pydash.get(
-                    self._raw_config,
-                    "exclude.roms.single_file.names",
-                    [],
-                ),
-            },
-            EXCLUDED_MULTI_FILES={
-                *DEFAULT_EXCLUDED_DIRS,
-                *pydash.get(
-                    self._raw_config,
-                    "exclude.roms.multi_file.names",
-                    [],
-                ),
-            },
-            EXCLUDED_MULTI_PARTS_EXT={
-                *(e.lower() for e in DEFAULT_EXCLUDED_EXTENSIONS),
-                *(
-                    e.lower()
-                    for e in pydash.get(
+                    ),
+                }
+            ),
+            EXCLUDED_MULTI_FILES=sorted(
+                {
+                    *DEFAULT_EXCLUDED_DIRS,
+                    *pydash.get(
                         self._raw_config,
-                        "exclude.roms.multi_file.parts.extensions",
+                        "exclude.roms.multi_file.names",
                         [],
-                    )
-                ),
-            },
-            EXCLUDED_MULTI_PARTS_FILES={
-                *DEFAULT_EXCLUDED_FILES,
-                *pydash.get(
-                    self._raw_config,
-                    "exclude.roms.multi_file.parts.names",
-                    [],
-                ),
-            },
+                    ),
+                }
+            ),
+            EXCLUDED_MULTI_PARTS_EXT=sorted(
+                {
+                    *(e.lower() for e in DEFAULT_EXCLUDED_EXTENSIONS),
+                    *(
+                        e.lower()
+                        for e in pydash.get(
+                            self._raw_config,
+                            "exclude.roms.multi_file.parts.extensions",
+                            [],
+                        )
+                    ),
+                }
+            ),
+            EXCLUDED_MULTI_PARTS_FILES=sorted(
+                {
+                    *DEFAULT_EXCLUDED_FILES,
+                    *pydash.get(
+                        self._raw_config,
+                        "exclude.roms.multi_file.parts.names",
+                        [],
+                    ),
+                }
+            ),
             PLATFORMS_BINDING=pydash.get(self._raw_config, "system.platforms", {}),
             PLATFORMS_VERSIONS=pydash.get(self._raw_config, "system.versions", {}),
             ROMS_FOLDER_NAME=pydash.get(
@@ -394,35 +406,35 @@ class ConfigManager:
 
     def _validate_config(self):
         """Validates the config.yml file"""
-        if not isinstance(self.config.EXCLUDED_PLATFORMS, set):
+        if not isinstance(self.config.EXCLUDED_PLATFORMS, list):
             log.critical("Invalid config.yml: exclude.platforms must be a list")
             sys.exit(3)
 
-        if not isinstance(self.config.EXCLUDED_SINGLE_EXT, set):
+        if not isinstance(self.config.EXCLUDED_SINGLE_EXT, list):
             log.critical(
                 "Invalid config.yml: exclude.roms.single_file.extensions must be a list"
             )
             sys.exit(3)
 
-        if not isinstance(self.config.EXCLUDED_SINGLE_FILES, set):
+        if not isinstance(self.config.EXCLUDED_SINGLE_FILES, list):
             log.critical(
                 "Invalid config.yml: exclude.roms.single_file.names must be a list"
             )
             sys.exit(3)
 
-        if not isinstance(self.config.EXCLUDED_MULTI_FILES, set):
+        if not isinstance(self.config.EXCLUDED_MULTI_FILES, list):
             log.critical(
                 "Invalid config.yml: exclude.roms.multi_file.names must be a list"
             )
             sys.exit(3)
 
-        if not isinstance(self.config.EXCLUDED_MULTI_PARTS_EXT, set):
+        if not isinstance(self.config.EXCLUDED_MULTI_PARTS_EXT, list):
             log.critical(
                 "Invalid config.yml: exclude.roms.multi_file.parts.extensions must be a list"
             )
             sys.exit(3)
 
-        if not isinstance(self.config.EXCLUDED_MULTI_PARTS_FILES, set):
+        if not isinstance(self.config.EXCLUDED_MULTI_PARTS_FILES, list):
             log.critical(
                 "Invalid config.yml: exclude.roms.multi_file.parts.names must be a list"
             )
@@ -593,17 +605,17 @@ class ConfigManager:
 
         self._raw_config = {
             "exclude": {
-                "platforms": sorted(self.config.EXCLUDED_PLATFORMS),
+                "platforms": self.config.EXCLUDED_PLATFORMS,
                 "roms": {
                     "single_file": {
-                        "extensions": sorted(self.config.EXCLUDED_SINGLE_EXT),
-                        "names": sorted(self.config.EXCLUDED_SINGLE_FILES),
+                        "extensions": self.config.EXCLUDED_SINGLE_EXT,
+                        "names": self.config.EXCLUDED_SINGLE_FILES,
                     },
                     "multi_file": {
-                        "names": sorted(self.config.EXCLUDED_MULTI_FILES),
+                        "names": self.config.EXCLUDED_MULTI_FILES,
                         "parts": {
-                            "extensions": sorted(self.config.EXCLUDED_MULTI_PARTS_EXT),
-                            "names": sorted(self.config.EXCLUDED_MULTI_PARTS_FILES),
+                            "extensions": self.config.EXCLUDED_MULTI_PARTS_EXT,
+                            "names": self.config.EXCLUDED_MULTI_PARTS_FILES,
                         },
                     },
                 },

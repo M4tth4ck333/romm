@@ -151,8 +151,8 @@ class TestFSHandler:
 
         # Mock configuration
         with patch("handler.filesystem.base_handler.cm.get_config") as mock_config:
-            mock_config.return_value.EXCLUDED_SINGLE_EXT = {"tmp"}
-            mock_config.return_value.EXCLUDED_SINGLE_FILES = {"test.txt"}
+            mock_config.return_value.EXCLUDED_SINGLE_EXT = ["tmp"]
+            mock_config.return_value.EXCLUDED_SINGLE_FILES = ["test.txt"]
 
             result = handler.exclude_single_files(files)
 

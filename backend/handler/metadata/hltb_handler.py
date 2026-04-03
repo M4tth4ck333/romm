@@ -272,7 +272,10 @@ class HLTBHandler(MetadataHandler):
             "x-hp-val": self.hp_val,
         }
 
-        payload[self.hp_key] = self.hp_val
+        # Some HLTB endpoints require the key:val in the payload
+        if self.hp_key and self.hp_val:
+            payload[self.hp_key] = self.hp_val
+
         log.debug(
             "HowLongToBeat API request: URL=%s, Headers=%s, Payload=%s, Timeout=%s",
             url,
