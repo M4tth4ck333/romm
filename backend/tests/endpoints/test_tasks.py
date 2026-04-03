@@ -359,7 +359,9 @@ class TestGetTasksStatus:
         mock_failed_registry = Mock()
         mock_failed_registry.get_job_ids.return_value = []
 
-        mock_job_fetch.side_effect = NoSuchJobError("No such job: rq:job:expired-job-id")
+        mock_job_fetch.side_effect = NoSuchJobError(
+            "No such job: rq:job:expired-job-id"
+        )
 
         with patch(
             "endpoints.tasks.FinishedJobRegistry", return_value=mock_finished_registry
