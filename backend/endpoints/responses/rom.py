@@ -204,9 +204,13 @@ class RomMetadataSchema(BaseModel):
     def sort_game_modes(cls, v: list[str]) -> list[str]:
         return sorted(v)
 
-    @field_validator("age_ratings")
-    def sort_age_ratings(cls, v: list[str]) -> list[str]:
-        return sorted(v)
+    @field_validator("age_ratings", mode="before")
+    def normalize_age_ratings(cls, v) -> list[str]:
+        # MySQL/MariaDB returns a scalar string instead of a single-element array
+        # when using JSON_EXTRACT with a [*] wildcard path on a single-element array.
+        if isinstance(v, str):
+            return sorted([v]) if v else []
+        return sorted(v) if v else []
 
 
 class RomSchema(BaseModel):
