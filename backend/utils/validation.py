@@ -184,14 +184,7 @@ def validate_url_for_http_request(url: str, field_name: str = "URL") -> None:
     try:
         ip = ipaddress.ip_address(hostname)
 
-        # Block cloud metadata service IPs (AWS, GCP, Azure, etc.)
-        # AWS/Azure metadata service: 169.254.169.254
-        if isinstance(ip, ipaddress.IPv4Address) and str(ip).startswith("169.254."):
-            msg = f"Invalid {field_name}: cloud metadata service addresses are not allowed"
-            log.error(f"SSRF prevention: {msg} - IP '{ip}'")
-            raise ValidationError(msg, field_name)
-
-        # Block private/internal IP addresses
+        # Block private/internal/link-local IP addresses
         if ip.is_private or ip.is_loopback or ip.is_link_local or ip.is_reserved:
             msg = f"Invalid {field_name}: private, internal, and reserved IP addresses are not allowed"
             log.error(f"SSRF prevention: {msg} - IP '{ip}'")
@@ -211,11 +204,6 @@ def validate_url_for_http_request(url: str, field_name: str = "URL") -> None:
         try:
             packed = socket.inet_aton(hostname)
             ip = ipaddress.IPv4Address(packed)
-
-            if isinstance(ip, ipaddress.IPv4Address) and str(ip).startswith("169.254."):
-                msg = f"Invalid {field_name}: cloud metadata service addresses are not allowed"
-                log.error(f"SSRF prevention: {msg} - IP '{ip}'")
-                raise ValidationError(msg, field_name)
 
             if ip.is_private or ip.is_loopback or ip.is_link_local or ip.is_reserved:
                 msg = f"Invalid {field_name}: private, internal, and reserved IP addresses are not allowed"
