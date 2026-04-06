@@ -185,6 +185,7 @@ system:
   versions: {}
 scan:
   gamelist:
+    export: true
     media:
       # Use the 3D box art as the <thumbnail> tag, preferred by Batocera/RetroBAT
       # Falls back to front cover if 3D box art has not been scraped
