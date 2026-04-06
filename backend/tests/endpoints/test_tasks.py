@@ -2,17 +2,9 @@ from unittest.mock import Mock, patch
 
 import pytest
 from fastapi import status
-from fastapi.testclient import TestClient
-from main import app
 from rq.exceptions import NoSuchJobError
 
 from tasks.tasks import Task, TaskType
-
-
-@pytest.fixture
-def client():
-    with TestClient(app) as client:
-        yield client
 
 
 @pytest.fixture
