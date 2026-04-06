@@ -187,11 +187,5 @@ scan:
   gamelist:
     export: true
     media:
-      # Use the 3D box art as the <thumbnail> tag, preferred by Batocera/RetroBAT
-      # Falls back to front cover if 3D box art has not been scraped
-      # Other options: cover (default), box2d, miximage, physical
       thumbnail: box3d
-      # Use the miximage as the <image> tag, preferred by Batocera/RetroBAT
-      # Falls back to first screenshot if not available
-      # Other options: "screenshot" (default), "title_screen", "cover"
       image: miximage
