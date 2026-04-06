@@ -244,9 +244,9 @@ class TestExportMetadata:
 class TestFormatHelpers:
     def test_format_rating(self):
         exporter = PegasusExporter()
-        assert exporter._format_rating(10.0) == "100%"
+        assert exporter._format_rating(100.0) == "100%"
         assert exporter._format_rating(0.0) == "0%"
-        assert exporter._format_rating(7.5) == "75%"
+        assert exporter._format_rating(75.0) == "75%"
 
     def test_escape_multiline(self):
         exporter = PegasusExporter()
