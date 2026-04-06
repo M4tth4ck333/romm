@@ -45,6 +45,7 @@ DEFAULT_EXCLUDED_FILES: Final = [
     ".stfolder",
     "@SynoResource",
     "gamelist.xml",
+    "metadata.pegasus.xml",
 ]
 DEFAULT_EXCLUDED_DIRS: Final = [
     "@eaDir",
@@ -224,39 +225,67 @@ class ConfigManager:
         self.config = Config(
             CONFIG_FILE_MOUNTED=self._config_file_mounted,
             CONFIG_FILE_WRITABLE=self._config_file_writable,
-            EXCLUDED_PLATFORMS=pydash.get(
-                self._raw_config, "exclude.platforms", DEFAULT_EXCLUDED_DIRS
+            EXCLUDED_PLATFORMS=sorted(
+                {
+                    *DEFAULT_EXCLUDED_DIRS,
+                    *pydash.get(self._raw_config, "exclude.platforms", []),
+                }
             ),
-            EXCLUDED_SINGLE_EXT=[
-                e.lower()
-                for e in pydash.get(
-                    self._raw_config,
-                    "exclude.roms.single_file.extensions",
-                    DEFAULT_EXCLUDED_EXTENSIONS,
-                )
-            ],
-            EXCLUDED_SINGLE_FILES=pydash.get(
-                self._raw_config,
-                "exclude.roms.single_file.names",
-                DEFAULT_EXCLUDED_FILES,
+            EXCLUDED_SINGLE_EXT=sorted(
+                {
+                    *(e.lower() for e in DEFAULT_EXCLUDED_EXTENSIONS),
+                    *(
+                        e.lower()
+                        for e in pydash.get(
+                            self._raw_config,
+                            "exclude.roms.single_file.extensions",
+                            [],
+                        )
+                    ),
+                }
             ),
-            EXCLUDED_MULTI_FILES=pydash.get(
-                self._raw_config,
-                "exclude.roms.multi_file.names",
-                DEFAULT_EXCLUDED_DIRS,
+            EXCLUDED_SINGLE_FILES=sorted(
+                {
+                    *DEFAULT_EXCLUDED_FILES,
+                    *pydash.get(
+                        self._raw_config,
+                        "exclude.roms.single_file.names",
+                        [],
+                    ),
+                }
             ),
-            EXCLUDED_MULTI_PARTS_EXT=[
-                e.lower()
-                for e in pydash.get(
-                    self._raw_config,
-                    "exclude.roms.multi_file.parts.extensions",
-                    DEFAULT_EXCLUDED_EXTENSIONS,
-                )
-            ],
-            EXCLUDED_MULTI_PARTS_FILES=pydash.get(
-                self._raw_config,
-                "exclude.roms.multi_file.parts.names",
-                DEFAULT_EXCLUDED_FILES,
+            EXCLUDED_MULTI_FILES=sorted(
+                {
+                    *DEFAULT_EXCLUDED_DIRS,
+                    *pydash.get(
+                        self._raw_config,
+                        "exclude.roms.multi_file.names",
+                        [],
+                    ),
+                }
+            ),
+            EXCLUDED_MULTI_PARTS_EXT=sorted(
+                {
+                    *(e.lower() for e in DEFAULT_EXCLUDED_EXTENSIONS),
+                    *(
+                        e.lower()
+                        for e in pydash.get(
+                            self._raw_config,
+                            "exclude.roms.multi_file.parts.extensions",
+                            [],
+                        )
+                    ),
+                }
+            ),
+            EXCLUDED_MULTI_PARTS_FILES=sorted(
+                {
+                    *DEFAULT_EXCLUDED_FILES,
+                    *pydash.get(
+                        self._raw_config,
+                        "exclude.roms.multi_file.parts.names",
+                        [],
+                    ),
+                }
             ),
             PLATFORMS_BINDING=pydash.get(self._raw_config, "system.platforms", {}),
             PLATFORMS_VERSIONS=pydash.get(self._raw_config, "system.versions", {}),

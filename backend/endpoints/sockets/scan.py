@@ -30,7 +30,7 @@ from handler.filesystem import (
     fs_rom_handler,
 )
 from handler.filesystem.roms_handler import FSRom
-from handler.metadata import meta_gamelist_handler
+from handler.metadata import meta_gamelist_handler, meta_hltb_handler
 from handler.metadata.ss_handler import get_preferred_media_types
 from handler.redis_handler import get_job_func_name, high_prio_queue, redis_client
 from handler.scan_handler import (
@@ -413,7 +413,7 @@ async def _identify_rom(
     )
 
     # Handle special media files from Screenscraper
-    if _added_rom.ss_metadata:
+    if _added_rom.ss_metadata and MetadataSource.SS in metadata_sources:
         preferred_media_types = get_preferred_media_types()
         for media_type in preferred_media_types:
             if _added_rom.ss_metadata.get(f"{media_type.value}_path"):
@@ -423,7 +423,7 @@ async def _identify_rom(
                 )
 
     # Handle special media files from ES-DE gamelist.xml
-    if _added_rom.gamelist_metadata:
+    if _added_rom.gamelist_metadata and MetadataSource.GAMELIST in metadata_sources:
         preferred_media_types = get_preferred_media_types()
         for media_type in preferred_media_types:
             if _added_rom.gamelist_metadata.get(f"{media_type.value}_path"):
@@ -433,7 +433,7 @@ async def _identify_rom(
                 )
 
     # Store normal and locked badges
-    if _added_rom.ra_metadata:
+    if _added_rom.ra_metadata and MetadataSource.RA in metadata_sources:
         for ach in _added_rom.ra_metadata.get("achievements", []):
             badge_url_lock = ach.get("badge_url_lock", None)
             badge_path_lock = ach.get("badge_path_lock", None)
@@ -637,8 +637,12 @@ async def scan_platforms(
         await socket_manager.emit("scan:done_ko", e.message)
         return scan_stats
 
-    # Clear the gamelist cache  to ensure we're using fresh gamelist.xml data
+    # Clear the gamelist cache to ensure we're using fresh gamelist.xml data
     meta_gamelist_handler.clear_cache()
+
+    # Initialize HLTB handler (fetches current search endpoint and security token)
+    if MetadataSource.HLTB in metadata_sources:
+        meta_hltb_handler.initialize()
 
     # Precalculate total platforms and ROMs
     total_roms = 0
