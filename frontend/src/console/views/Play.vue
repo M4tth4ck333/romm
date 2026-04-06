@@ -773,7 +773,7 @@ onBeforeUnmount(() => {
           <div class="text-red-300 font-medium">
             {{ t("console.emulator-failed") }}
           </div>
-          <div class="mt-1 text-[11px] max-w-xs leading-snug wrap-break-word">
+          <div class="mt-1 text-[11px] max-w-xs leading-snug wrap-break-words">
             {{ loaderError }}
           </div>
         </template>

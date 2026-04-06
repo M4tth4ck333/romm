@@ -24,6 +24,7 @@ from models.device_save_sync import DeviceSaveSync
 from models.platform import Platform
 from models.play_session import PlaySession
 from models.rom import Rom
+from models.sync_session import SyncSession
 from models.user import Role, User
 
 engine = create_engine(ConfigManager.get_db_engine(), pool_pre_ping=True)
@@ -40,6 +41,7 @@ def clear_database():
     with session.begin() as s:
         s.query(PlaySession).delete(synchronize_session="evaluate")
         s.query(ClientToken).delete(synchronize_session="evaluate")
+        s.query(SyncSession).delete(synchronize_session="evaluate")
         s.query(DeviceSaveSync).delete(synchronize_session="evaluate")
         s.query(Device).delete(synchronize_session="evaluate")
         s.query(Save).delete(synchronize_session="evaluate")

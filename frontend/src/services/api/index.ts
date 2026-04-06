@@ -70,12 +70,14 @@ api.interceptors.response.use(
       await refetchCSRFToken();
 
       const pathname = window.location.pathname;
-      const params = new URLSearchParams(window.location.search);
+      const search = window.location.search;
+      const params = new URLSearchParams(search);
+      const fullPath = pathname + search;
 
       router.push({
         name: ROUTES.LOGIN,
         query: {
-          next: params.get("next") ?? (pathname !== "/login" ? pathname : "/"),
+          next: params.get("next") ?? (pathname !== "/login" ? fullPath : "/"),
         },
       });
     }

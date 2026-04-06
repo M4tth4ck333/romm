@@ -13,6 +13,7 @@ import type {
 import { ROUTES } from "@/plugins/router";
 import playSessionApi from "@/services/api/play-session";
 import { saveApi as api } from "@/services/api/save";
+import storeAuth from "@/stores/auth";
 import storeConfig from "@/stores/config";
 import storeLanguage from "@/stores/language";
 import storePlaying from "@/stores/playing";
@@ -36,6 +37,7 @@ import {
 
 const INVALID_CHARS_REGEX = /[#<$+%>!`&*'|{}/\\?"=@:^\r\n]/gi;
 
+const authStore = storeAuth();
 const romsStore = storeRoms();
 const playingStore = storePlaying();
 const configStore = storeConfig();
@@ -53,6 +55,7 @@ const props = defineProps<{
 const romRef = ref<DetailedRom>(props.rom);
 const saveRef = ref<SaveSchema | null>(props.save);
 const sessionStartTime = ref<Date | null>(null);
+const deviceIDRef = ref(authStore.user?.current_device_id ?? undefined);
 const theme = useTheme();
 const emitter = inject<Emitter<Events>>("emitter");
 const { playing, fullScreen } = storeToRefs(playingStore);
@@ -277,6 +280,7 @@ window.EJS_onSaveSave = async function ({
     save: saveRef.value,
     saveFile,
     screenshotFile,
+    deviceId: deviceIDRef.value,
   });
 
   romsStore.update(romRef.value);
@@ -407,6 +411,7 @@ window.EJS_onGameStart = async () => {
       save: saveRef.value,
       saveFile,
       screenshotFile,
+      deviceId: deviceIDRef.value,
     });
 
     romsStore.update(romRef.value);
