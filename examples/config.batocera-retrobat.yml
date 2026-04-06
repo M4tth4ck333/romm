@@ -183,8 +183,7 @@ system:
     zx81: zx81
     zxspectrum: zxs
   versions: {}
-
-export:
+scan:
   gamelist:
     media:
       # Use the 3D box art as the <thumbnail> tag, preferred by Batocera/RetroBAT
@@ -194,4 +193,4 @@ export:
       # Use the miximage as the <image> tag, preferred by Batocera/RetroBAT
       # Falls back to first screenshot if not available
       # Other options: "screenshot" (default), "title_screen", "cover"
-      image: "miximage"
+      image: miximage

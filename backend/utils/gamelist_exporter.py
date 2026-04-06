@@ -16,6 +16,13 @@ from logger.logger import log
 from models.rom import Rom
 
 
+def get_media_options_for_export() -> tuple[str, str]:
+    """Get media options for export from config"""
+    config = cm.get_config()
+
+    return config.GAMELIST_MEDIA_IMAGE, config.GAMELIST_MEDIA_THUMBNAIL
+
+
 class GamelistExporter:
     """Export RomM collections to ES-DE gamelist.xml format"""
 
@@ -26,7 +33,9 @@ class GamelistExporter:
         """Format release date to YYYYMMDDTHHMMSS format"""
         return datetime.fromtimestamp(timestamp / 1000).strftime("%Y%m%dT%H%M%S")
 
-    def _create_game_element(self, rom: Rom, request: Request | None) -> Element:
+    def _create_game_element(
+        self, rom: Rom, request: Request | None, media_image: str, media_thumbnail: str
+    ) -> Element:
         """Create a <game> element for a ROM"""
         game = Element("game")
 
@@ -52,24 +61,34 @@ class GamelistExporter:
             SubElement(game, "desc").text = rom.summary
 
         # Media files
-        config = cm.get_config()
         thumbnail_path: str | None = None
-        thumbnail_option = config.GAMELIST_THUMBNAIL_MEDIA
-        if thumbnail_option == "box3d":
-            if rom.ss_metadata and rom.ss_metadata.get("box3d_path"):
-                thumbnail_path = f"{FRONTEND_RESOURCES_PATH}/{rom.ss_metadata['box3d_path']}"
-            elif rom.gamelist_metadata and rom.gamelist_metadata.get("box3d"):
-                thumbnail_path = rom.gamelist_metadata["box3d"]
-        elif thumbnail_option == "miximage":
-            if rom.ss_metadata and rom.ss_metadata.get("miximage_path"):
-                thumbnail_path = f"{FRONTEND_RESOURCES_PATH}/{rom.ss_metadata['miximage_path']}"
-            elif rom.gamelist_metadata and rom.gamelist_metadata.get("miximage_path"):
-                thumbnail_path = f"{FRONTEND_RESOURCES_PATH}/{rom.gamelist_metadata['miximage_path']}"
-        elif thumbnail_option == "physical":
-            if rom.ss_metadata and rom.ss_metadata.get("physical_path"):
-                thumbnail_path = f"{FRONTEND_RESOURCES_PATH}/{rom.ss_metadata['physical_path']}"
-            elif rom.gamelist_metadata and rom.gamelist_metadata.get("physical_path"):
-                thumbnail_path = f"{FRONTEND_RESOURCES_PATH}/{rom.gamelist_metadata['physical_path']}"
+        match media_thumbnail:
+            case "box3d":
+                if rom.ss_metadata and rom.ss_metadata.get("box3d_path"):
+                    thumbnail_path = (
+                        f"{FRONTEND_RESOURCES_PATH}/{rom.ss_metadata['box3d_path']}"
+                    )
+                elif rom.gamelist_metadata and rom.gamelist_metadata.get("box3d"):
+                    thumbnail_path = rom.gamelist_metadata["box3d"]
+            case "miximage":
+                if rom.ss_metadata and rom.ss_metadata.get("miximage_path"):
+                    thumbnail_path = (
+                        f"{FRONTEND_RESOURCES_PATH}/{rom.ss_metadata['miximage_path']}"
+                    )
+                elif rom.gamelist_metadata and rom.gamelist_metadata.get(
+                    "miximage_path"
+                ):
+                    thumbnail_path = f"{FRONTEND_RESOURCES_PATH}/{rom.gamelist_metadata['miximage_path']}"
+            case "physical":
+                if rom.ss_metadata and rom.ss_metadata.get("physical_path"):
+                    thumbnail_path = (
+                        f"{FRONTEND_RESOURCES_PATH}/{rom.ss_metadata['physical_path']}"
+                    )
+                elif rom.gamelist_metadata and rom.gamelist_metadata.get(
+                    "physical_path"
+                ):
+                    thumbnail_path = f"{FRONTEND_RESOURCES_PATH}/{rom.gamelist_metadata['physical_path']}"
+
         # "cover" and "box2d" both map to path_cover_l (box2d IS the front cover)
         if thumbnail_path is None and rom.path_cover_l:
             thumbnail_path = f"{FRONTEND_RESOURCES_PATH}/{rom.path_cover_l}"
@@ -89,20 +108,27 @@ class GamelistExporter:
             )
 
         image_path: str | None = None
-        image_option = config.GAMELIST_IMAGE_MEDIA
-        if image_option == "title_screen":
-            if rom.ss_metadata and rom.ss_metadata.get("title_screen_path"):
-                image_path = f"{FRONTEND_RESOURCES_PATH}/{rom.ss_metadata['title_screen_path']}"
-            elif rom.gamelist_metadata and rom.gamelist_metadata.get("title_screen_path"):
-                image_path = f"{FRONTEND_RESOURCES_PATH}/{rom.gamelist_metadata['title_screen_path']}"
-        elif image_option == "miximage":
-            if rom.ss_metadata and rom.ss_metadata.get("miximage_path"):
-                image_path = f"{FRONTEND_RESOURCES_PATH}/{rom.ss_metadata['miximage_path']}"
-            elif rom.gamelist_metadata and rom.gamelist_metadata.get("miximage_path"):
-                image_path = f"{FRONTEND_RESOURCES_PATH}/{rom.gamelist_metadata['miximage_path']}"
-        elif image_option == "cover":
-            if rom.path_cover_l:
-                image_path = f"{FRONTEND_RESOURCES_PATH}/{rom.path_cover_l}"
+        match media_image:
+            case "title_screen":
+                if rom.ss_metadata and rom.ss_metadata.get("title_screen_path"):
+                    image_path = f"{FRONTEND_RESOURCES_PATH}/{rom.ss_metadata['title_screen_path']}"
+                elif rom.gamelist_metadata and rom.gamelist_metadata.get(
+                    "title_screen_path"
+                ):
+                    image_path = f"{FRONTEND_RESOURCES_PATH}/{rom.gamelist_metadata['title_screen_path']}"
+            case "miximage":
+                if rom.ss_metadata and rom.ss_metadata.get("miximage_path"):
+                    image_path = (
+                        f"{FRONTEND_RESOURCES_PATH}/{rom.ss_metadata['miximage_path']}"
+                    )
+                elif rom.gamelist_metadata and rom.gamelist_metadata.get(
+                    "miximage_path"
+                ):
+                    image_path = f"{FRONTEND_RESOURCES_PATH}/{rom.gamelist_metadata['miximage_path']}"
+            case "cover":
+                if rom.path_cover_l:
+                    image_path = f"{FRONTEND_RESOURCES_PATH}/{rom.path_cover_l}"
+
         # "screenshot" (default) and anything else falls through to path_screenshots
         if image_path is None and rom.path_screenshots:
             image_path = f"{FRONTEND_RESOURCES_PATH}/{rom.path_screenshots[0]}"
@@ -232,9 +258,16 @@ class GamelistExporter:
         # Create root element
         root = Element("gameList")
 
+        media_image, media_thumbnail = get_media_options_for_export()
+
         for rom in roms:
             if rom and not rom.missing_from_fs and rom.fs_name != "gamelist.xml":
-                game_element = self._create_game_element(rom, request=request)
+                game_element = self._create_game_element(
+                    rom,
+                    request=request,
+                    media_image=media_image,
+                    media_thumbnail=media_thumbnail,
+                )
                 root.append(game_element)
 
         # Convert to XML string

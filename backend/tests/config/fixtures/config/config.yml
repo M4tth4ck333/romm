@@ -51,6 +51,11 @@ scan:
     - box3d
     - physical
     - miximage
+  gamelist:
+    export: true
+    media:
+      thumbnail: "box3d"
+      image: "title_screen"
 
 emulatorjs:
   debug: true
@@ -75,9 +80,3 @@ emulatorjs:
         0:
           value: x
           value2: BUTTON_2
-
-export:
-  gamelist:
-    media:
-      thumbnail: "box3d"
-      image: "title_screen"

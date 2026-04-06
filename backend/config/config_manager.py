@@ -127,8 +127,8 @@ class Config:
     SCAN_REGION_PRIORITY: list[str]
     SCAN_LANGUAGE_PRIORITY: list[str]
     SCAN_MEDIA: list[str]
-    GAMELIST_THUMBNAIL_MEDIA: str
-    GAMELIST_IMAGE_MEDIA: str
+    GAMELIST_MEDIA_THUMBNAIL: str
+    GAMELIST_MEDIA_IMAGE: str
 
     def __init__(self, **entries):
         self.__dict__.update(entries)
@@ -298,7 +298,7 @@ class ConfigManager:
                 self._raw_config, "filesystem.firmware_folder", "bios"
             ),
             GAMELIST_AUTO_EXPORT_ON_SCAN=pydash.get(
-                self._raw_config, "scan.export_gamelist", False
+                self._raw_config, "scan.gamelist.export", False
             ),
             SKIP_HASH_CALCULATION=pydash.get(
                 self._raw_config, "filesystem.skip_hash_calculation", False
@@ -372,14 +372,14 @@ class ConfigManager:
                     "manual",
                 ],
             ),
-            GAMELIST_THUMBNAIL_MEDIA=pydash.get(
+            GAMELIST_MEDIA_THUMBNAIL=pydash.get(
                 self._raw_config,
-                "export.gamelist.media.thumbnail",
+                "scan.gamelist.media.thumbnail",
                 "cover",
             ),
-            GAMELIST_IMAGE_MEDIA=pydash.get(
+            GAMELIST_MEDIA_IMAGE=pydash.get(
                 self._raw_config,
-                "export.gamelist.media.image",
+                "scan.gamelist.media.image",
                 "screenshot",
             ),
         )
@@ -452,7 +452,7 @@ class ConfigManager:
             )
             sys.exit(3)
         if not isinstance(self.config.GAMELIST_AUTO_EXPORT_ON_SCAN, bool):
-            log.critical("Invalid config.yml: scan.export_gamelist must be a boolean")
+            log.critical("Invalid config.yml: scan.gamelist.export must be a boolean")
             sys.exit(3)
 
         if not isinstance(self.config.PLATFORMS_BINDING, dict):
@@ -660,15 +660,13 @@ class ConfigManager:
                     "language": self.config.SCAN_LANGUAGE_PRIORITY,
                 },
                 "media": self.config.SCAN_MEDIA,
-                "export_gamelist": self.config.GAMELIST_AUTO_EXPORT_ON_SCAN,
-            },
-            "export": {
                 "gamelist": {
+                    "export": self.config.GAMELIST_AUTO_EXPORT_ON_SCAN,
                     "media": {
-                        "thumbnail": self.config.GAMELIST_THUMBNAIL_MEDIA,
-                        "image": self.config.GAMELIST_IMAGE_MEDIA,
-                    }
-                }
+                        "thumbnail": self.config.GAMELIST_MEDIA_THUMBNAIL,
+                        "image": self.config.GAMELIST_MEDIA_IMAGE,
+                    },
+                },
             },
         }
 

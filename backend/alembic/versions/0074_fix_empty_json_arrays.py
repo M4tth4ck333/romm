@@ -1,7 +1,7 @@
 """Fix roms_metadata view: empty JSON arrays should not win COALESCE over populated ones
 
-Revision ID: 0073_fix_empty_json_arrays
-Revises: 0072_client_tokens
+Revision ID: 0074_fix_empty_json_arrays
+Revises: 0073_sibling_roms_metadata_only
 Create Date: 2026-03-31 00:00:00.000000
 
 """
@@ -12,8 +12,8 @@ from alembic import op
 from utils.database import is_postgresql
 
 # revision identifiers, used by Alembic.
-revision = "0073_fix_empty_json_arrays"
-down_revision = "0072_client_tokens"
+revision = "0074_fix_empty_json_arrays"
+down_revision = "0073_sibling_roms_metadata_only"
 branch_labels = None
 depends_on = None
 
@@ -270,7 +270,11 @@ def upgrade():
                                 WHEN JSON_CONTAINS_PATH(r.igdb_metadata, 'one', '$.age_ratings')
                                     AND JSON_LENGTH(JSON_EXTRACT(r.igdb_metadata, '$.age_ratings')) > 0
                                 THEN
-                                    JSON_EXTRACT(r.igdb_metadata, '$.age_ratings[*].rating')
+                                     IF(
+                                        JSON_TYPE(JSON_EXTRACT(r.igdb_metadata, '$.age_ratings[*].rating')) = 'ARRAY',
+                                        JSON_EXTRACT(r.igdb_metadata, '$.age_ratings[*].rating'),
+                                        JSON_ARRAY(JSON_UNQUOTE(JSON_EXTRACT(r.igdb_metadata, '$.age_ratings[*].rating')))
+                                    )
                                 ELSE
                                     NULL
                             END,
@@ -278,7 +282,11 @@ def upgrade():
                                 WHEN JSON_CONTAINS_PATH(r.ss_metadata, 'one', '$.age_ratings')
                                     AND JSON_LENGTH(JSON_EXTRACT(r.ss_metadata, '$.age_ratings')) > 0
                                 THEN
-                                    JSON_EXTRACT(r.ss_metadata, '$.age_ratings[*].rating')
+                                    IF(
+                                        JSON_TYPE(JSON_EXTRACT(r.ss_metadata, '$.age_ratings[*].rating')) = 'ARRAY',
+                                        JSON_EXTRACT(r.ss_metadata, '$.age_ratings[*].rating'),
+                                        JSON_ARRAY(JSON_UNQUOTE(JSON_EXTRACT(r.ss_metadata, '$.age_ratings[*].rating')))
+                                    )
                                 ELSE
                                     NULL
                             END,

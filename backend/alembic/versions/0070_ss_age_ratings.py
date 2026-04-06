@@ -1,8 +1,8 @@
-"""Add ScreenScraper age ratings to roms_metadata view
+"""Fix roms_metadata view: empty JSON arrays should not win COALESCE over populated ones
 
-Revision ID: 0070_ss_age_ratings
-Revises: 0069_sibling_roms_fs_name
-Create Date: 2026-03-08 21:00:00.000000
+Revision ID: 0074_fix_empty_json_arrays
+Revises: 0073_sibling_roms_metadata_only
+Create Date: 2026-03-31 00:00:00.000000
 
 """
 
@@ -12,8 +12,8 @@ from alembic import op
 from utils.database import is_postgresql
 
 # revision identifiers, used by Alembic.
-revision = "0070_ss_age_ratings"
-down_revision = "0069_sibling_roms_fs_name"
+revision = "0074_fix_empty_json_arrays"
+down_revision = "0073_sibling_roms_metadata_only"
 branch_labels = None
 depends_on = None
 
@@ -28,23 +28,23 @@ def upgrade():
                     NOW() AS created_at,
                     NOW() AS updated_at,
                     COALESCE(
-                        (r.manual_metadata -> 'genres'),
-                        (r.igdb_metadata -> 'genres'),
-                        (r.moby_metadata -> 'genres'),
-                        (r.ss_metadata -> 'genres'),
-                        (r.launchbox_metadata -> 'genres'),
-                        (r.ra_metadata -> 'genres'),
-                        (r.flashpoint_metadata -> 'genres'),
-                        (r.gamelist_metadata -> 'genres'),
+                        NULLIF(r.manual_metadata -> 'genres', '[]'::jsonb),
+                        NULLIF(r.igdb_metadata -> 'genres', '[]'::jsonb),
+                        NULLIF(r.moby_metadata -> 'genres', '[]'::jsonb),
+                        NULLIF(r.ss_metadata -> 'genres', '[]'::jsonb),
+                        NULLIF(r.launchbox_metadata -> 'genres', '[]'::jsonb),
+                        NULLIF(r.ra_metadata -> 'genres', '[]'::jsonb),
+                        NULLIF(r.flashpoint_metadata -> 'genres', '[]'::jsonb),
+                        NULLIF(r.gamelist_metadata -> 'genres', '[]'::jsonb),
                         '[]'::jsonb
                     ) AS genres,
 
                     COALESCE(
-                        (r.manual_metadata -> 'franchises'),
-                        (r.igdb_metadata -> 'franchises'),
-                        (r.ss_metadata -> 'franchises'),
-                        (r.flashpoint_metadata -> 'franchises'),
-                        (r.gamelist_metadata -> 'franchises'),
+                        NULLIF(r.manual_metadata -> 'franchises', '[]'::jsonb),
+                        NULLIF(r.igdb_metadata -> 'franchises', '[]'::jsonb),
+                        NULLIF(r.ss_metadata -> 'franchises', '[]'::jsonb),
+                        NULLIF(r.flashpoint_metadata -> 'franchises', '[]'::jsonb),
+                        NULLIF(r.gamelist_metadata -> 'franchises', '[]'::jsonb),
                         '[]'::jsonb
                     ) AS franchises,
 
@@ -54,21 +54,21 @@ def upgrade():
                     ) AS collections,
 
                     COALESCE(
-                        (r.manual_metadata -> 'companies'),
-                        (r.igdb_metadata -> 'companies'),
-                        (r.ss_metadata -> 'companies'),
-                        (r.ra_metadata -> 'companies'),
-                        (r.launchbox_metadata -> 'companies'),
-                        (r.flashpoint_metadata -> 'companies'),
-                        (r.gamelist_metadata -> 'companies'),
+                        NULLIF(r.manual_metadata -> 'companies', '[]'::jsonb),
+                        NULLIF(r.igdb_metadata -> 'companies', '[]'::jsonb),
+                        NULLIF(r.ss_metadata -> 'companies', '[]'::jsonb),
+                        NULLIF(r.ra_metadata -> 'companies', '[]'::jsonb),
+                        NULLIF(r.launchbox_metadata -> 'companies', '[]'::jsonb),
+                        NULLIF(r.flashpoint_metadata -> 'companies', '[]'::jsonb),
+                        NULLIF(r.gamelist_metadata -> 'companies', '[]'::jsonb),
                         '[]'::jsonb
                     ) AS companies,
 
                     COALESCE(
-                        (r.manual_metadata -> 'game_modes'),
-                        (r.igdb_metadata -> 'game_modes'),
-                        (r.ss_metadata -> 'game_modes'),
-                        (r.flashpoint_metadata -> 'game_modes'),
+                        NULLIF(r.manual_metadata -> 'game_modes', '[]'::jsonb),
+                        NULLIF(r.igdb_metadata -> 'game_modes', '[]'::jsonb),
+                        NULLIF(r.ss_metadata -> 'game_modes', '[]'::jsonb),
+                        NULLIF(r.flashpoint_metadata -> 'game_modes', '[]'::jsonb),
                         '[]'::jsonb
                     ) AS game_modes,
 
@@ -220,23 +220,23 @@ def upgrade():
                         NOW() AS created_at,
                         NOW() AS updated_at,
                         COALESCE(
-                            JSON_EXTRACT(r.manual_metadata, '$.genres'),
-                            JSON_EXTRACT(r.igdb_metadata, '$.genres'),
-                            JSON_EXTRACT(r.moby_metadata, '$.genres'),
-                            JSON_EXTRACT(r.ss_metadata, '$.genres'),
-                            JSON_EXTRACT(r.launchbox_metadata, '$.genres'),
-                            JSON_EXTRACT(r.ra_metadata, '$.genres'),
-                            JSON_EXTRACT(r.flashpoint_metadata, '$.genres'),
-                            JSON_EXTRACT(r.gamelist_metadata, '$.genres'),
+                            CASE WHEN JSON_LENGTH(JSON_EXTRACT(r.manual_metadata, '$.genres')) > 0 THEN JSON_EXTRACT(r.manual_metadata, '$.genres') ELSE NULL END,
+                            CASE WHEN JSON_LENGTH(JSON_EXTRACT(r.igdb_metadata, '$.genres')) > 0 THEN JSON_EXTRACT(r.igdb_metadata, '$.genres') ELSE NULL END,
+                            CASE WHEN JSON_LENGTH(JSON_EXTRACT(r.moby_metadata, '$.genres')) > 0 THEN JSON_EXTRACT(r.moby_metadata, '$.genres') ELSE NULL END,
+                            CASE WHEN JSON_LENGTH(JSON_EXTRACT(r.ss_metadata, '$.genres')) > 0 THEN JSON_EXTRACT(r.ss_metadata, '$.genres') ELSE NULL END,
+                            CASE WHEN JSON_LENGTH(JSON_EXTRACT(r.launchbox_metadata, '$.genres')) > 0 THEN JSON_EXTRACT(r.launchbox_metadata, '$.genres') ELSE NULL END,
+                            CASE WHEN JSON_LENGTH(JSON_EXTRACT(r.ra_metadata, '$.genres')) > 0 THEN JSON_EXTRACT(r.ra_metadata, '$.genres') ELSE NULL END,
+                            CASE WHEN JSON_LENGTH(JSON_EXTRACT(r.flashpoint_metadata, '$.genres')) > 0 THEN JSON_EXTRACT(r.flashpoint_metadata, '$.genres') ELSE NULL END,
+                            CASE WHEN JSON_LENGTH(JSON_EXTRACT(r.gamelist_metadata, '$.genres')) > 0 THEN JSON_EXTRACT(r.gamelist_metadata, '$.genres') ELSE NULL END,
                             JSON_ARRAY()
                         ) AS genres,
 
                         COALESCE(
-                            JSON_EXTRACT(r.manual_metadata, '$.franchises'),
-                            JSON_EXTRACT(r.igdb_metadata, '$.franchises'),
-                            JSON_EXTRACT(r.ss_metadata, '$.franchises'),
-                            JSON_EXTRACT(r.flashpoint_metadata, '$.franchises'),
-                            JSON_EXTRACT(r.gamelist_metadata, '$.franchises'),
+                            CASE WHEN JSON_LENGTH(JSON_EXTRACT(r.manual_metadata, '$.franchises')) > 0 THEN JSON_EXTRACT(r.manual_metadata, '$.franchises') ELSE NULL END,
+                            CASE WHEN JSON_LENGTH(JSON_EXTRACT(r.igdb_metadata, '$.franchises')) > 0 THEN JSON_EXTRACT(r.igdb_metadata, '$.franchises') ELSE NULL END,
+                            CASE WHEN JSON_LENGTH(JSON_EXTRACT(r.ss_metadata, '$.franchises')) > 0 THEN JSON_EXTRACT(r.ss_metadata, '$.franchises') ELSE NULL END,
+                            CASE WHEN JSON_LENGTH(JSON_EXTRACT(r.flashpoint_metadata, '$.franchises')) > 0 THEN JSON_EXTRACT(r.flashpoint_metadata, '$.franchises') ELSE NULL END,
+                            CASE WHEN JSON_LENGTH(JSON_EXTRACT(r.gamelist_metadata, '$.franchises')) > 0 THEN JSON_EXTRACT(r.gamelist_metadata, '$.franchises') ELSE NULL END,
                             JSON_ARRAY()
                         ) AS franchises,
 
@@ -246,21 +246,21 @@ def upgrade():
                         ) AS collections,
 
                         COALESCE(
-                            JSON_EXTRACT(r.manual_metadata, '$.companies'),
-                            JSON_EXTRACT(r.igdb_metadata, '$.companies'),
-                            JSON_EXTRACT(r.ss_metadata, '$.companies'),
-                            JSON_EXTRACT(r.ra_metadata, '$.companies'),
-                            JSON_EXTRACT(r.launchbox_metadata, '$.companies'),
-                            JSON_EXTRACT(r.flashpoint_metadata, '$.companies'),
-                            JSON_EXTRACT(r.gamelist_metadata, '$.companies'),
+                            CASE WHEN JSON_LENGTH(JSON_EXTRACT(r.manual_metadata, '$.companies')) > 0 THEN JSON_EXTRACT(r.manual_metadata, '$.companies') ELSE NULL END,
+                            CASE WHEN JSON_LENGTH(JSON_EXTRACT(r.igdb_metadata, '$.companies')) > 0 THEN JSON_EXTRACT(r.igdb_metadata, '$.companies') ELSE NULL END,
+                            CASE WHEN JSON_LENGTH(JSON_EXTRACT(r.ss_metadata, '$.companies')) > 0 THEN JSON_EXTRACT(r.ss_metadata, '$.companies') ELSE NULL END,
+                            CASE WHEN JSON_LENGTH(JSON_EXTRACT(r.ra_metadata, '$.companies')) > 0 THEN JSON_EXTRACT(r.ra_metadata, '$.companies') ELSE NULL END,
+                            CASE WHEN JSON_LENGTH(JSON_EXTRACT(r.launchbox_metadata, '$.companies')) > 0 THEN JSON_EXTRACT(r.launchbox_metadata, '$.companies') ELSE NULL END,
+                            CASE WHEN JSON_LENGTH(JSON_EXTRACT(r.flashpoint_metadata, '$.companies')) > 0 THEN JSON_EXTRACT(r.flashpoint_metadata, '$.companies') ELSE NULL END,
+                            CASE WHEN JSON_LENGTH(JSON_EXTRACT(r.gamelist_metadata, '$.companies')) > 0 THEN JSON_EXTRACT(r.gamelist_metadata, '$.companies') ELSE NULL END,
                             JSON_ARRAY()
                         ) AS companies,
 
                         COALESCE(
-                            JSON_EXTRACT(r.manual_metadata, '$.game_modes'),
-                            JSON_EXTRACT(r.igdb_metadata, '$.game_modes'),
-                            JSON_EXTRACT(r.ss_metadata, '$.game_modes'),
-                            JSON_EXTRACT(r.flashpoint_metadata, '$.game_modes'),
+                            CASE WHEN JSON_LENGTH(JSON_EXTRACT(r.manual_metadata, '$.game_modes')) > 0 THEN JSON_EXTRACT(r.manual_metadata, '$.game_modes') ELSE NULL END,
+                            CASE WHEN JSON_LENGTH(JSON_EXTRACT(r.igdb_metadata, '$.game_modes')) > 0 THEN JSON_EXTRACT(r.igdb_metadata, '$.game_modes') ELSE NULL END,
+                            CASE WHEN JSON_LENGTH(JSON_EXTRACT(r.ss_metadata, '$.game_modes')) > 0 THEN JSON_EXTRACT(r.ss_metadata, '$.game_modes') ELSE NULL END,
+                            CASE WHEN JSON_LENGTH(JSON_EXTRACT(r.flashpoint_metadata, '$.game_modes')) > 0 THEN JSON_EXTRACT(r.flashpoint_metadata, '$.game_modes') ELSE NULL END,
                             JSON_ARRAY()
                         ) AS game_modes,
 
@@ -270,7 +270,11 @@ def upgrade():
                                 WHEN JSON_CONTAINS_PATH(r.igdb_metadata, 'one', '$.age_ratings')
                                     AND JSON_LENGTH(JSON_EXTRACT(r.igdb_metadata, '$.age_ratings')) > 0
                                 THEN
-                                    JSON_EXTRACT(r.igdb_metadata, '$.age_ratings[*].rating')
+                                     IF(
+                                        JSON_TYPE(JSON_EXTRACT(r.igdb_metadata, '$.age_ratings[*].rating')) = 'ARRAY',
+                                        JSON_EXTRACT(r.igdb_metadata, '$.age_ratings[*].rating'),
+                                        JSON_ARRAY(JSON_UNQUOTE(JSON_EXTRACT(r.igdb_metadata, '$.age_ratings[*].rating')))
+                                    )
                                 ELSE
                                     NULL
                             END,
@@ -278,7 +282,11 @@ def upgrade():
                                 WHEN JSON_CONTAINS_PATH(r.ss_metadata, 'one', '$.age_ratings')
                                     AND JSON_LENGTH(JSON_EXTRACT(r.ss_metadata, '$.age_ratings')) > 0
                                 THEN
-                                    JSON_EXTRACT(r.ss_metadata, '$.age_ratings[*].rating')
+                                    IF(
+                                        JSON_TYPE(JSON_EXTRACT(r.ss_metadata, '$.age_ratings[*].rating')) = 'ARRAY',
+                                        JSON_EXTRACT(r.ss_metadata, '$.age_ratings[*].rating'),
+                                        JSON_ARRAY(JSON_UNQUOTE(JSON_EXTRACT(r.ss_metadata, '$.age_ratings[*].rating')))
+                                    )
                                 ELSE
                                     NULL
                             END,

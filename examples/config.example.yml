@@ -134,23 +134,12 @@
 #     - logo  # Transparent logo
 #     # Other media assets (might be used in the future)
 #     - marquee  # Custom marquee
-
-# export:
 #   gamelist:
+#     export: false # Whether to export gamelist.xml for ES-DE/Batocera/RetroBAT
 #     media:
-#       # Media asset to use as the <thumbnail> tag in the exported gamelist.xml
-#       # cover    - front cover art / box2d (default)
-#       # box2d    - same as cover
-#       # box3d    - 3D box art (falls back to cover if not available)
-#       # miximage - mixed image (falls back to cover if not available)
-#       # physical - disc/cartridge image (falls back to cover if not available)
-#       thumbnail: cover
-#       # Media asset to use as the <image> tag in the exported gamelist.xml
-#       # screenshot   - first screenshot (default)
-#       # title_screen - title screen image (falls back to screenshot if not available)
-#       # miximage     - mixed image (falls back to screenshot if not available)
-#       # cover        - front cover art (falls back to screenshot if not available)
-#       image: screenshot
+#       # Select a media type from the list above (eg. box2d, screenshot, etc.)
+#       thumbnail: cover # Use as the <thumbnail> tag in the exported gamelist.xml
+#       image: screenshot  # Use as the <image> tag in the exported gamelist.xml
 
 # EmulatorJS per-core options
 # emulatorjs:

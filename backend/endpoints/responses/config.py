@@ -31,5 +31,5 @@ class ConfigResponse(TypedDict):
     SCAN_REGION_PRIORITY: list[str]
     SCAN_LANGUAGE_PRIORITY: list[str]
     SCAN_MEDIA: list[str]
-    GAMELIST_THUMBNAIL_MEDIA: str
-    GAMELIST_IMAGE_MEDIA: str
+    GAMELIST_MEDIA_THUMBNAIL: str
+    GAMELIST_MEDIA_IMAGE: str
