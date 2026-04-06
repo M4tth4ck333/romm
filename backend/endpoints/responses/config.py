@@ -12,6 +12,9 @@ class ConfigResponse(TypedDict):
     EXCLUDED_MULTI_FILES: list[str]
     EXCLUDED_MULTI_PARTS_EXT: list[str]
     EXCLUDED_MULTI_PARTS_FILES: list[str]
+    DEFAULT_EXCLUDED_DIRS: list[str]
+    DEFAULT_EXCLUDED_FILES: list[str]
+    DEFAULT_EXCLUDED_EXTENSIONS: list[str]
     PLATFORMS_BINDING: dict[str, str]
     PLATFORMS_VERSIONS: dict[str, str]
     SKIP_HASH_CALCULATION: bool

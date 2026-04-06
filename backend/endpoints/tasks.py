@@ -3,6 +3,7 @@ from typing import Any, TypedDict
 
 from fastapi import Body, HTTPException, Request
 from rq import Worker
+from rq.exceptions import NoSuchJobError
 from rq.job import Job, JobStatus
 from rq.registry import FailedJobRegistry, FinishedJobRegistry
 
@@ -273,7 +274,11 @@ async def get_tasks_status(request: Request) -> list[TaskStatusResponse]:
     # Process finished jobs
     for registry in finished_registries:
         for job_id in registry.get_job_ids():
-            job = Job.fetch(job_id, connection=redis_client)
+            try:
+                job = Job.fetch(job_id, connection=redis_client)
+            except NoSuchJobError:
+                registry.remove(job_id)
+                continue
             all_tasks.append(
                 _build_task_status_response(
                     job,
@@ -283,7 +288,11 @@ async def get_tasks_status(request: Request) -> list[TaskStatusResponse]:
     # Process failed jobs
     for registry in failed_registries:
         for job_id in registry.get_job_ids():
-            job = Job.fetch(job_id, connection=redis_client)
+            try:
+                job = Job.fetch(job_id, connection=redis_client)
+            except NoSuchJobError:
+                registry.remove(job_id)
+                continue
             all_tasks.append(_build_task_status_response(job))
 
     all_tasks.sort(

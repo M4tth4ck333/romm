@@ -133,6 +133,7 @@ DEP002 = [ # DEP002 rule: Project should not contain unused dependencies
 
 [tool.uv]
 package = false
+exclude-newer = "7 days"
 
 [tool.ty.environment]
 root = ["./backend"]
