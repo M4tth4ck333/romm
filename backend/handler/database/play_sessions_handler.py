@@ -22,7 +22,7 @@ class DBPlaySessionsHandler(DBBaseHandler):
         return play_sessions
 
     @begin_session
-    def find_existing(
+    def find_existing_sesssion(
         self,
         user_id: int,
         keys: list[tuple[str | None, int | None, datetime]],
