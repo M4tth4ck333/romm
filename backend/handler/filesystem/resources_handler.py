@@ -410,7 +410,13 @@ class FSResourcesHandler(FSHandler):
                 ) as response:
                     if response.status_code == status.HTTP_200_OK:
                         if not _check_content_type(
-                            response, ("application/pdf",), "manual"
+                            response,
+                            (
+                                "application/pdf",
+                                "application/force-download",
+                                "application/octet-stream",
+                            ),
+                            "manual",
                         ):
                             return None
 
