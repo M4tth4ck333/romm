@@ -24,8 +24,10 @@ def _content_type_essence(header_value: str) -> str:
     """Return the MIME type token (before parameters), lowercased."""
     if not header_value:
         return ""
-    essence = header_value.split(";", 1)[0].strip().lower()
-    return essence.lstrip("\ufeff").strip()
+
+    return (
+        header_value.split(";", 1)[0].strip().lower().lstrip("\ufeff")
+    )  # Remove BOM if present
 
 
 def _check_content_type(
