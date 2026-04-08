@@ -59,6 +59,8 @@ const DS_3DS_PLATFORMS = new Set([
   "nintendo-dsi",
   "3ds",
   "new-nintendo-3ds",
+  "psx",
+  "dc",
 ]);
 const PSP_PLATFORMS = new Set(["psp", "psp-minis"]);
 const SWITCH_PLATFORMS = new Set(["switch", "switch-2"]);
