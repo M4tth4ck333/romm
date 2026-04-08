@@ -75,8 +75,13 @@ api.interceptors.response.use(
       const fullPath = pathname + search;
 
       // Don't redirect to login if already on an auth-exempt route
-      const authExemptRoutes = ["/register", "/reset-password", "/pair"];
-      if (authExemptRoutes.some((route) => pathname.startsWith(route))) {
+      const authExemptRoutes = [
+        ROUTES.REGISTER,
+        ROUTES.RESET_PASSWORD,
+        ROUTES.PAIR,
+        ROUTES.SETUP,
+      ];
+      if (authExemptRoutes.some((route) => pathname.startsWith(`/${route}`))) {
         return Promise.reject(error);
       }
 
