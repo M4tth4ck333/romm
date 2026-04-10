@@ -221,7 +221,6 @@ async def search_cover(
     request: Request,
     search_term: str = "",
 ) -> list[SearchCoverSchema]:
-
     if not meta_sgdb_handler.is_enabled():
         log.error("Search error: No SteamGridDB enabled")
         raise HTTPException(

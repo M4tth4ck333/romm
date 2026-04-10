@@ -37,7 +37,6 @@ class TestDeviceEndpoints:
         assert "device_id" in data
 
     def test_list_devices(self, client, access_token: str, admin_user: User):
-
         db_device_handler.add_device(
             Device(
                 id="test-device-1",
@@ -66,7 +65,6 @@ class TestDeviceEndpoints:
         assert "Device 2" in names
 
     def test_get_device(self, client, access_token: str, admin_user: User):
-
         device = db_device_handler.add_device(
             Device(
                 id="test-device-get",
@@ -131,7 +129,6 @@ class TestDeviceEndpoints:
         assert data["sync_enabled"] is False
 
     def test_delete_device(self, client, access_token: str, admin_user: User):
-
         device = db_device_handler.add_device(
             Device(
                 id="test-device-delete",

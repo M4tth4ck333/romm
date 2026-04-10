@@ -48,6 +48,7 @@ def upgrade():
             nullable=False,
         ),
         sa.ForeignKeyConstraint(["user_id"], ["users.id"], ondelete="CASCADE"),
+        if_not_exists=True,
     )
 
     op.create_table(
@@ -71,32 +72,47 @@ def upgrade():
         sa.ForeignKeyConstraint(["device_id"], ["devices.id"], ondelete="CASCADE"),
         sa.ForeignKeyConstraint(["save_id"], ["saves.id"], ondelete="CASCADE"),
         sa.PrimaryKeyConstraint("device_id", "save_id"),
+        if_not_exists=True,
     )
 
     with op.batch_alter_table("saves", schema=None) as batch_op:
-        batch_op.add_column(sa.Column("slot", sa.String(255), nullable=True))
-        batch_op.add_column(sa.Column("content_hash", sa.String(32), nullable=True))
+        batch_op.add_column(
+            sa.Column("slot", sa.String(255), nullable=True), if_not_exists=True
+        )
+        batch_op.add_column(
+            sa.Column("content_hash", sa.String(32), nullable=True), if_not_exists=True
+        )
 
-    op.create_index("ix_devices_user_id", "devices", ["user_id"])
-    op.create_index("ix_devices_last_seen", "devices", ["last_seen"])
-    op.create_index("ix_device_save_sync_save_id", "device_save_sync", ["save_id"])
-    op.create_index("ix_saves_slot", "saves", ["slot"])
+    op.create_index("ix_devices_user_id", "devices", ["user_id"], if_not_exists=True)
     op.create_index(
-        "ix_saves_rom_user_hash", "saves", ["rom_id", "user_id", "content_hash"]
+        "ix_devices_last_seen", "devices", ["last_seen"], if_not_exists=True
+    )
+    op.create_index(
+        "ix_device_save_sync_save_id",
+        "device_save_sync",
+        ["save_id"],
+        if_not_exists=True,
+    )
+    op.create_index("ix_saves_slot", "saves", ["slot"], if_not_exists=True)
+    op.create_index(
+        "ix_saves_rom_user_hash",
+        "saves",
+        ["rom_id", "user_id", "content_hash"],
+        if_not_exists=True,
     )
 
 
 def downgrade():
-    op.drop_index("ix_saves_rom_user_hash", "saves")
-    op.drop_index("ix_saves_slot", "saves")
-    op.drop_index("ix_device_save_sync_save_id", "device_save_sync")
-    op.drop_index("ix_devices_last_seen", "devices")
-    op.drop_index("ix_devices_user_id", "devices")
+    op.drop_index("ix_saves_rom_user_hash", "saves", if_exists=True)
+    op.drop_index("ix_saves_slot", "saves", if_exists=True)
+    op.drop_index("ix_device_save_sync_save_id", "device_save_sync", if_exists=True)
+    op.drop_index("ix_devices_last_seen", "devices", if_exists=True)
+    op.drop_index("ix_devices_user_id", "devices", if_exists=True)
 
     with op.batch_alter_table("saves", schema=None) as batch_op:
-        batch_op.drop_column("content_hash")
-        batch_op.drop_column("slot")
+        batch_op.drop_column("content_hash", if_exists=True)
+        batch_op.drop_column("slot", if_exists=True)
 
-    op.drop_table("device_save_sync")
-    op.drop_table("devices")
+    op.drop_table("device_save_sync", if_exists=True)
+    op.drop_table("devices", if_exists=True)
     op.execute("DROP TYPE IF EXISTS syncmode")

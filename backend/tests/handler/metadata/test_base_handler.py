@@ -251,7 +251,6 @@ class TestMetadataHandlerMethods:
         ) as mock_exists, patch.object(
             async_cache, "hget", new_callable=AsyncMock
         ) as mock_hget:
-
             mock_exists.return_value = True
             mock_hget.return_value = json.dumps(
                 {"name": "Switch Game", "publisher": "Nintendo"}
@@ -276,7 +275,6 @@ class TestMetadataHandlerMethods:
         ) as mock_exists, patch.object(
             async_cache, "hget", new_callable=AsyncMock
         ) as mock_hget:
-
             mock_exists.return_value = True
             mock_hget.return_value = None
 
