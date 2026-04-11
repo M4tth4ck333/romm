@@ -9,6 +9,8 @@ Create Date: 2026-01-17
 import sqlalchemy as sa
 from alembic import op
 
+from utils.database import is_postgresql
+
 revision = "0068_save_sync"
 down_revision = "0067_romfile_category_enum_cheat"
 branch_labels = None
@@ -103,16 +105,39 @@ def upgrade():
 
 
 def downgrade():
+    # Determine the FK constraint name that MariaDB assigned for saves.rom_id so we
+    # can temporarily drop it before removing the composite index it depends on.
+    conn = op.get_bind()
+    fk_rows = conn.execute(
+        sa.text(
+            "SELECT CONSTRAINT_NAME FROM information_schema.KEY_COLUMN_USAGE "
+            "WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'saves' "
+            "AND COLUMN_NAME = 'rom_id' AND REFERENCED_TABLE_NAME IS NOT NULL"
+        )
+    ).fetchall()
+
+    fk_names = [row[0] for row in fk_rows]
+
+    # Drop FKs that rely on rom_id so the composite index can be removed
+    for fk_name in fk_names:
+        op.drop_constraint(fk_name, "saves", type_="foreignkey")
+
     op.drop_index("ix_saves_rom_user_hash", "saves", if_exists=True)
     op.drop_index("ix_saves_slot", "saves", if_exists=True)
-    op.drop_index("ix_device_save_sync_save_id", "device_save_sync", if_exists=True)
-    op.drop_index("ix_devices_last_seen", "devices", if_exists=True)
-    op.drop_index("ix_devices_user_id", "devices", if_exists=True)
+
+    # Re-create the FK (MariaDB will auto-create an implicit index for it)
+    for fk_name in fk_names:
+        op.create_foreign_key(
+            fk_name, "saves", "roms", ["rom_id"], ["id"], ondelete="CASCADE"
+        )
 
     with op.batch_alter_table("saves", schema=None) as batch_op:
         batch_op.drop_column("content_hash", if_exists=True)
         batch_op.drop_column("slot", if_exists=True)
 
+    # drop_table handles indexes and FK constraints, no need to drop them separately
     op.drop_table("device_save_sync", if_exists=True)
     op.drop_table("devices", if_exists=True)
-    op.execute("DROP TYPE IF EXISTS syncmode")
+
+    if is_postgresql(op.get_bind()):
+        op.execute("DROP TYPE IF EXISTS syncmode")

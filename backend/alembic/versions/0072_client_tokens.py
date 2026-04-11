@@ -57,7 +57,4 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    with op.batch_alter_table("client_tokens") as batch_op:
-        batch_op.drop_index(batch_op.f("ix_client_tokens_user_id"), if_exists=True)
-        batch_op.drop_index(batch_op.f("ix_client_tokens_hashed_token"), if_exists=True)
     op.drop_table("client_tokens", if_exists=True)
