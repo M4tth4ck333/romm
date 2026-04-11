@@ -40,8 +40,10 @@ export ROMM_BASE_PATH=${ROMM_BASE_PATH:-/romm}
 export ROMM_PORT=${ROMM_PORT:-8080}
 
 # Disable nginx access logs when log level is WARNING, ERROR, or CRITICAL
-case "${LOGLEVEL:-INFO}" in
-WARNING | ERROR | CRITICAL | warning | error | critical)
+loglevel="${LOGLEVEL:-INFO}"
+loglevel="${loglevel^^}"
+case "${loglevel}" in
+WARNING | WARN | ERROR | CRITICAL)
 	export NGINX_ACCESS_LOG="access_log off;"
 	;;
 *)

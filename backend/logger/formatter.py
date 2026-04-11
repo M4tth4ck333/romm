@@ -46,6 +46,11 @@ LOGGING_CONFIG = {
             "handlers": ["default"],
             "propagate": False,
         },
+        "uvicorn.access": {
+            "level": LOGLEVEL,
+            "handlers": ["default"],
+            "propagate": False,
+        },
     },
 }
 
