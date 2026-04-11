@@ -41,12 +41,12 @@ export ROMM_PORT=${ROMM_PORT:-8080}
 
 # Disable nginx access logs when log level is WARNING, ERROR, or CRITICAL
 case "${LOGLEVEL:-INFO}" in
-    WARNING|ERROR|CRITICAL|warning|error|critical)
-        export NGINX_ACCESS_LOG="access_log off;"
-        ;;
-    *)
-        export NGINX_ACCESS_LOG=""
-        ;;
+WARNING | ERROR | CRITICAL | warning | error | critical)
+	export NGINX_ACCESS_LOG="access_log off;"
+	;;
+*)
+	export NGINX_ACCESS_LOG=""
+	;;
 esac
 
 # Set IPV6_LISTEN based on IPV4_ONLY
