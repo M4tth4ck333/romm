@@ -93,7 +93,8 @@ start_bin_gunicorn() {
 	# cleanup potentially leftover socket
 	rm /tmp/gunicorn.sock -f
 
-	# Generate gunicorn logging config with the configured log level
+	# Generate gunicorn logging config with the configured log level.
+	# Note: this file is auto-generated at startup; do not modify /etc/gunicorn/logging.conf directly.
 	cat >/etc/gunicorn/logging.conf <<EOF
 [loggers]
 keys=root,gunicorn,error
@@ -131,7 +132,7 @@ args=(sys.stdout,)
 
 # Formatter for Gunicorn logs
 [formatter_gunicorn_format]
-format=INFO:     [RomM][gunicorn][%%(asctime)s] %%(message)s
+format=%%(levelname)s:     [RomM][gunicorn][%%(asctime)s] %%(message)s
 datefmt=%Y-%m-%d %H:%M:%S
 EOF
 
