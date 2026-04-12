@@ -117,6 +117,7 @@ const hashMatches = computed(() => {
           style="text-decoration: none; color: inherit"
           :href="`https://www.igdb.com/games/${rom.slug}`"
           target="_blank"
+          rel="noopener noreferrer"
           class="mr-1"
         >
           <v-chip class="pl-0 mt-1" size="small" title="IGDB ID" @click.stop>
@@ -134,6 +135,7 @@ const hashMatches = computed(() => {
           style="text-decoration: none; color: inherit"
           :href="`https://www.mobygames.com/game/${rom.moby_id}`"
           target="_blank"
+          rel="noopener noreferrer"
           class="mr-1"
         >
           <v-chip
@@ -165,6 +167,7 @@ const hashMatches = computed(() => {
           style="text-decoration: none; color: inherit"
           :href="`https://www.screenscraper.fr/gameinfos.php?gameid=${rom.ss_id}`"
           target="_blank"
+          rel="noopener noreferrer"
           class="mr-1"
         >
           <v-chip
@@ -191,6 +194,7 @@ const hashMatches = computed(() => {
           style="text-decoration: none; color: inherit"
           :href="`https://gamesdb.launchbox-app.com/games/dbid/${rom.launchbox_id}`"
           target="_blank"
+          rel="noopener noreferrer"
           class="mr-1"
         >
           <v-chip
@@ -223,6 +227,7 @@ const hashMatches = computed(() => {
           style="text-decoration: none; color: inherit"
           :href="`https://retroachievements.org/game/${rom.ra_id}`"
           target="_blank"
+          rel="noopener noreferrer"
           class="mr-1"
         >
           <v-chip
@@ -242,6 +247,7 @@ const hashMatches = computed(() => {
           style="text-decoration: none; color: inherit"
           :href="`https://hasheous.org/index.html?page=dataobjectdetail&type=game&id=${rom.hasheous_id}`"
           target="_blank"
+          rel="noopener"
           class="mr-1"
         >
           <v-chip
@@ -266,6 +272,7 @@ const hashMatches = computed(() => {
           style="text-decoration: none; color: inherit"
           :href="`https://flashpointproject.github.io/flashpoint-database/search/#${rom.flashpoint_id}`"
           target="_blank"
+          rel="noopener noreferrer"
           class="mr-1"
         >
           <v-chip class="pl-0 mt-1" size="small" title="Flashpoint ID">
@@ -285,6 +292,7 @@ const hashMatches = computed(() => {
           style="text-decoration: none; color: inherit"
           :href="`https://howlongtobeat.com/game/${rom.hltb_id}`"
           target="_blank"
+          rel="noopener noreferrer"
           class="mr-1"
         >
           <v-chip class="pl-0 mt-1" size="small" title="HowLongToBeat ID">
@@ -319,6 +327,7 @@ const hashMatches = computed(() => {
           style="text-decoration: none; color: inherit"
           :href="`https://www.steamgriddb.com/game/${rom.sgdb_id}`"
           target="_blank"
+          rel="noopener noreferrer"
           class="mr-1"
         >
           <v-chip class="pl-0 mt-1" size="small" title="SGDB ID">
