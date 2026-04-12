@@ -926,15 +926,29 @@ class DBRomsHandler(DBBaseHandler):
         self,
         platform_id: int,
         fs_names: Iterable[str],
-        query: Query = None,  # type: ignore
         session: Session = None,  # type: ignore
     ) -> dict[str, Rom]:
-        """Retrieve a dictionary of roms by their filesystem names."""
-        query = query.filter(Rom.fs_name.in_(fs_names)).filter_by(
-            platform_id=platform_id
-        )
+        """Retrieve a dictionary of roms by their filesystem names.
 
-        roms = session.scalars(query).unique().all()
+        Eager-loads only `platform` (used downstream by the scan loop via
+        `rom.platform_slug` / `rom.platform.fs_slug`) — deliberately
+        avoiding `with_details`, whose full relationship eager-load is
+        wasted work for the scan-skip decision on large platforms.
+        """
+        roms = (
+            session.scalars(
+                select(Rom)
+                .options(selectinload(Rom.platform))
+                .where(
+                    and_(
+                        Rom.platform_id == platform_id,
+                        Rom.fs_name.in_(fs_names),
+                    )
+                )
+            )
+            .unique()
+            .all()
+        )
 
         return {rom.fs_name: rom for rom in roms}
 
