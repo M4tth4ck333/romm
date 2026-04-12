@@ -457,6 +457,7 @@ async function stopScan() {
                       <a
                         href="https://docs.romm.app/latest/Usage/LibraryManagement/#scan"
                         target="_blank"
+                        rel="noopener"
                         style="font-style: italic; text-decoration: underline"
                       >
                         {{ t("scan.scan-types-more-info") }}

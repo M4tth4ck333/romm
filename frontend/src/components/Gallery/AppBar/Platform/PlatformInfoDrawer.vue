@@ -398,6 +398,7 @@ watch(
               style="text-decoration: none; color: inherit"
               :href="`https://www.igdb.com/platforms/${currentPlatform.igdb_slug}`"
               target="_blank"
+              rel="noopener noreferrer"
               :tabindex="tabIndex"
             >
               <v-chip class="pl-0 mt-1" size="small" @click.stop>
@@ -412,6 +413,7 @@ watch(
               style="text-decoration: none; color: inherit"
               :href="`https://www.screenscraper.fr/gamesinfos.php?plateforme=${currentPlatform.ss_id}`"
               target="_blank"
+              rel="noopener noreferrer"
               class="ml-1"
               :tabindex="tabIndex"
             >
@@ -430,6 +432,7 @@ watch(
               style="text-decoration: none; color: inherit"
               :href="`https://www.mobygames.com/platform/${currentPlatform.moby_slug}`"
               target="_blank"
+              rel="noopener noreferrer"
               class="ml-1"
               :tabindex="tabIndex"
             >
@@ -445,6 +448,7 @@ watch(
               style="text-decoration: none; color: inherit"
               :href="`https://retroachievements.org/system/${currentPlatform.ra_id}/games`"
               target="_blank"
+              rel="noopener noreferrer"
               class="ml-1"
               :tabindex="tabIndex"
             >
@@ -463,6 +467,7 @@ watch(
               style="text-decoration: none; color: inherit"
               :href="`https://gamesdb.launchbox-app.com/platforms/games/${currentPlatform.launchbox_id}`"
               target="_blank"
+              rel="noopener noreferrer"
               class="ml-1"
               :tabindex="tabIndex"
             >
@@ -484,6 +489,7 @@ watch(
               style="text-decoration: none; color: inherit"
               :href="`https://hasheous.org/index.html?page=dataobjectdetail&type=platform&id=${currentPlatform.hasheous_id}`"
               target="_blank"
+              rel="noopener"
               class="ml-1"
               :tabindex="tabIndex"
             >
@@ -509,6 +515,7 @@ watch(
               style="text-decoration: none; color: inherit"
               :href="`https://thegamesdb.net/platform.php?id=${currentPlatform.tgdb_id}`"
               target="_blank"
+              rel="noopener noreferrer"
               class="ml-1"
               :tabindex="tabIndex"
             >

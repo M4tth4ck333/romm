@@ -18,6 +18,9 @@ async def test_scan_platform():
     assert platform.name == "Nintendo 64"
     assert platform.igdb_id == 4
     assert platform.hasheous_id == 64
+    # Hasheous returns tgdb_id=None and Moby has no tgdb_id for n64, so
+    # this value must come from the TGDB handler fallback.
+    assert platform.tgdb_id == 3
 
     async with initialize_context():
         platform = await scan_platform("", [])
@@ -27,6 +30,7 @@ async def test_scan_platform():
     assert platform.name == ""
     assert platform.igdb_id is None
     assert platform.hasheous_id is None
+    assert platform.tgdb_id is None
 
 
 @pytest.mark.vcr

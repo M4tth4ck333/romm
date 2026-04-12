@@ -355,6 +355,7 @@ function getFilterValues(path: string): string[] {
                 style="color: inherit"
                 :href="source.url"
                 target="_blank"
+                rel="noopener noreferrer"
               >
                 {{ source.name }}
               </a>
@@ -365,7 +366,12 @@ function getFilterValues(path: string): string[] {
           </div>
           <div v-if="rom.url_cover && coverImageSource" class="mt-1">
             Cover art provided by
-            <a :href="rom.url_cover" target="_blank" style="color: inherit">
+            <a
+              :href="rom.url_cover"
+              target="_blank"
+              rel="noopener noreferrer"
+              style="color: inherit"
+            >
               {{ coverImageSource }}</a
             >.
           </div>
