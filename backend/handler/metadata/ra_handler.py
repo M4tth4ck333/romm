@@ -3,7 +3,7 @@ import os
 import re
 import time
 from datetime import datetime
-from typing import NotRequired, TypedDict
+from typing import NotRequired, TypedDict, cast
 
 import pydash
 from anyio import Path as AnyioPath
@@ -347,10 +347,13 @@ class RAHandler(MetadataHandler):
                     game_current_progression.get("highest_award_kind")
                     != highest_award_kind
                 ):
-                    game_current_progression = {
-                        **game_current_progression,
-                        "highest_award_kind": highest_award_kind,
-                    }
+                    game_current_progression = cast(
+                        RAUserGameProgression,
+                        {
+                            **game_current_progression,
+                            "highest_award_kind": highest_award_kind,
+                        },
+                    )
                 game_progressions.append(game_current_progression)
                 continue
 
