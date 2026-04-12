@@ -3,6 +3,13 @@ import re
 from collections.abc import Iterator
 from pathlib import Path
 
+# Container file extensions treated as compressed archives across modules
+# (roms_handler for hashing decisions, rahasher for skipping disc-platform
+# buffer-hash attempts, feeds for PKGi passthrough).
+COMPRESSED_FILE_EXTENSIONS: frozenset[str] = frozenset(
+    (".7z", ".bz2", ".gz", ".rar", ".tar", ".zip")
+)
+
 
 def iter_files(path: str, recursive: bool = False) -> Iterator[tuple[Path, str]]:
     """List files in a directory.

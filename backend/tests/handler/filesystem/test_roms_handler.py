@@ -48,6 +48,7 @@ class TestFSRomsHandler:
             id=1,
             fs_name="Paper Mario (USA).z64",
             fs_path="n64/roms",
+            fs_extension="z64",
             platform=platform,
             full_path="n64/roms/Paper Mario (USA).z64",
         )
@@ -58,6 +59,7 @@ class TestFSRomsHandler:
             id=3,
             fs_name="Sonic (EU) [T]",
             fs_path="n64/roms",
+            fs_extension="",
             platform=platform,
             full_path="n64/roms/Sonic (EU) [T]",
             files=[
@@ -80,6 +82,7 @@ class TestFSRomsHandler:
             id=2,
             fs_name="Super Mario 64 (J) (Rev A)",
             fs_path="n64/roms",
+            fs_extension="",
             platform=platform,
             files=[
                 RomFile(
@@ -687,6 +690,7 @@ class TestFSRomsHandler:
         rom = Rom(
             id=1,
             fs_name="test.chd",
+            fs_extension="chd",
             fs_path=str(roms_path.relative_to(tmp_path)),
             platform=platform,
         )
@@ -742,6 +746,7 @@ class TestFSRomsHandler:
         rom = Rom(
             id=1,
             fs_name="old_format.chd",
+            fs_extension="chd",
             fs_path=str(roms_path.relative_to(tmp_path)),
             platform=platform,
         )

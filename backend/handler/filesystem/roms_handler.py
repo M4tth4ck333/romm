@@ -26,7 +26,7 @@ from handler.metadata.base_handler import UniversalPlatformSlug as UPS
 from models.platform import Platform
 from models.rom import Rom, RomFile, RomFileCategory
 from utils.archive_7zip import process_file_7z
-from utils.filesystem import iter_files
+from utils.filesystem import COMPRESSED_FILE_EXTENSIONS, iter_files
 from utils.hashing import crc32_to_hex
 
 from .base_handler import (
@@ -46,17 +46,6 @@ COMPRESSED_MIME_TYPES: Final = frozenset(
         "application/x-gzip",
         "application/x-tar",
         "application/zip",
-    )
-)
-
-# Known file extensions that are compressed
-COMPRESSED_FILE_EXTENSIONS = frozenset(
-    (
-        ".7z",
-        ".bz2",
-        ".gz",
-        ".tar",
-        ".zip",
     )
 )
 
@@ -131,7 +120,7 @@ def is_compressed_file(file_path: str) -> bool:
     mime = magic.Magic(mime=True)
     file_type = mime.from_file(file_path)
 
-    return file_type in COMPRESSED_MIME_TYPES or file_path.endswith(
+    return file_type in COMPRESSED_MIME_TYPES or file_path.lower().endswith(
         tuple(COMPRESSED_FILE_EXTENSIONS)
     )
 
@@ -459,7 +448,7 @@ class FSRomsHandler(FSHandler):
                 ra_platform = meta_ra_handler.get_platform(rom.platform_slug)
                 if ra_platform and ra_platform["ra_id"]:
                     rom_ra_h = await RAHasherService().calculate_hash(
-                        ra_platform["ra_id"],
+                        ra_platform,
                         f"{abs_fs_path}/{rom.fs_name}/*",
                     )
 
@@ -550,7 +539,7 @@ class FSRomsHandler(FSHandler):
                 ra_platform = meta_ra_handler.get_platform(rom.platform_slug)
                 if ra_platform and ra_platform["ra_id"]:
                     rom_ra_h = await RAHasherService().calculate_hash(
-                        ra_platform["ra_id"],
+                        ra_platform,
                         f"{abs_fs_path}/{rom.fs_name}",
                     )
 

@@ -4,10 +4,13 @@ from unittest.mock import AsyncMock, patch
 import pytest
 
 from adapters.services.rahasher import (
+    PLATFORM_SLUG_TO_RETROACHIEVEMENTS_ID,
+    RA_BUFFER_HASH_UNSUPPORTED,
     RAHASHER_VALID_HASH_REGEX,
     RAHasherError,
     RAHasherService,
 )
+from handler.metadata.base_handler import UniversalPlatformSlug as UPS
 
 
 class TestRAHasherValidHashRegex:
@@ -48,7 +51,7 @@ class TestRAHasherService:
         return RAHasherService()
 
     @pytest.mark.asyncio
-    async def test_calculate_hash_success(self, service):
+    async def test_calculate_hash_success(self, service: RAHasherService):
         """Test successful hash calculation."""
         mock_proc = AsyncMock()
         mock_proc.wait.return_value = 0  # RAHasher returns 0 on success
@@ -56,42 +59,45 @@ class TestRAHasherService:
         mock_proc.stderr = None
 
         with patch("asyncio.create_subprocess_exec", return_value=mock_proc):
-            with patch("handler.metadata.ra_handler.RA_ID_TO_SLUG", {7: "nes"}):
-                result = await service.calculate_hash(7, "/path/to/game.nes")
+            result = await service.calculate_hash(
+                {"ra_id": 7, "slug": "nes"}, "/path/to/game.nes"
+            )
 
         assert result == "a1b2c3d4e5f6789012345678901234ab"
         mock_proc.wait.assert_called_once()
         mock_proc.stdout.read.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_calculate_hash_rahasher_not_found(self, service):
+    async def test_calculate_hash_rahasher_not_found(self, service: RAHasherService):
         """Test when RAHasher executable is not found."""
         with patch(
             "asyncio.create_subprocess_exec",
             side_effect=FileNotFoundError("RAHasher not found"),
         ):
-            with patch("handler.metadata.ra_handler.RA_ID_TO_SLUG", {7: "nes"}):
-                result = await service.calculate_hash(7, "/path/to/game.nes")
+            result = await service.calculate_hash(
+                {"ra_id": 7, "slug": "nes"}, "/path/to/game.nes"
+            )
 
         assert result == ""
 
     @pytest.mark.asyncio
-    async def test_calculate_hash_rahasher_failure(self, service):
+    async def test_calculate_hash_rahasher_failure(self, service: RAHasherService):
         """Test when RAHasher fails with non-1 return code."""
         mock_proc = AsyncMock()
         mock_proc.wait.return_value = 2  # Error return code
         mock_proc.stderr.read.return_value = b"Error processing file"
 
         with patch("asyncio.create_subprocess_exec", return_value=mock_proc):
-            with patch("handler.metadata.ra_handler.RA_ID_TO_SLUG", {7: "nes"}):
-                result = await service.calculate_hash(7, "/path/to/game.nes")
+            result = await service.calculate_hash(
+                {"ra_id": 7, "slug": "nes"}, "/path/to/game.nes"
+            )
 
         assert result == ""
         mock_proc.wait.assert_called_once()
         mock_proc.stderr.read.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_calculate_hash_no_stdout(self, service):
+    async def test_calculate_hash_no_stdout(self, service: RAHasherService):
         """Test when RAHasher has no stdout."""
         mock_proc = AsyncMock()
         mock_proc.wait.return_value = 1
@@ -99,13 +105,14 @@ class TestRAHasherService:
         mock_proc.stderr = None
 
         with patch("asyncio.create_subprocess_exec", return_value=mock_proc):
-            with patch("handler.metadata.ra_handler.RA_ID_TO_SLUG", {7: "nes"}):
-                result = await service.calculate_hash(7, "/path/to/game.nes")
+            result = await service.calculate_hash(
+                {"ra_id": 7, "slug": "nes"}, "/path/to/game.nes"
+            )
 
         assert result == ""
 
     @pytest.mark.asyncio
-    async def test_calculate_hash_empty_output(self, service):
+    async def test_calculate_hash_empty_output(self, service: RAHasherService):
         """Test when RAHasher returns empty output."""
         mock_proc = AsyncMock()
         mock_proc.wait.return_value = 1
@@ -113,13 +120,14 @@ class TestRAHasherService:
         mock_proc.stderr = None
 
         with patch("asyncio.create_subprocess_exec", return_value=mock_proc):
-            with patch("handler.metadata.ra_handler.RA_ID_TO_SLUG", {7: "nes"}):
-                result = await service.calculate_hash(7, "/path/to/game.nes")
+            result = await service.calculate_hash(
+                {"ra_id": 7, "slug": "nes"}, "/path/to/game.nes"
+            )
 
         assert result == ""
 
     @pytest.mark.asyncio
-    async def test_calculate_hash_invalid_hash_format(self, service):
+    async def test_calculate_hash_invalid_hash_format(self, service: RAHasherService):
         """Test when RAHasher returns invalid hash format."""
         mock_proc = AsyncMock()
         mock_proc.wait.return_value = 1
@@ -127,13 +135,14 @@ class TestRAHasherService:
         mock_proc.stderr = None
 
         with patch("asyncio.create_subprocess_exec", return_value=mock_proc):
-            with patch("handler.metadata.ra_handler.RA_ID_TO_SLUG", {7: "nes"}):
-                result = await service.calculate_hash(7, "/path/to/game.nes")
+            result = await service.calculate_hash(
+                {"ra_id": 7, "slug": "nes"}, "/path/to/game.nes"
+            )
 
         assert result == ""
 
     @pytest.mark.asyncio
-    async def test_calculate_hash_with_extra_output(self, service):
+    async def test_calculate_hash_with_extra_output(self, service: RAHasherService):
         """Test when RAHasher returns hash with extra text."""
         mock_proc = AsyncMock()
         mock_proc.wait.return_value = 0
@@ -143,13 +152,14 @@ class TestRAHasherService:
         mock_proc.stderr = None
 
         with patch("asyncio.create_subprocess_exec", return_value=mock_proc):
-            with patch("handler.metadata.ra_handler.RA_ID_TO_SLUG", {7: "nes"}):
-                result = await service.calculate_hash(7, "/path/to/game.nes")
+            result = await service.calculate_hash(
+                {"ra_id": 7, "slug": "nes"}, "/path/to/game.nes"
+            )
 
         assert result == "a1b2c3d4e5f6789012345678901234ab"
 
     @pytest.mark.asyncio
-    async def test_calculate_hash_subprocess_args(self, service):
+    async def test_calculate_hash_subprocess_args(self, service: RAHasherService):
         """Test that subprocess is called with correct arguments."""
         mock_proc = AsyncMock()
         mock_proc.wait.return_value = 1
@@ -159,8 +169,9 @@ class TestRAHasherService:
         with patch(
             "asyncio.create_subprocess_exec", return_value=mock_proc
         ) as mock_subprocess:
-            with patch("handler.metadata.ra_handler.RA_ID_TO_SLUG", {7: "nes"}):
-                await service.calculate_hash(7, "/path/to/game.nes")
+            await service.calculate_hash(
+                {"ra_id": 7, "slug": "nes"}, "/path/to/game.nes"
+            )
 
         mock_subprocess.assert_called_once_with(
             "RAHasher",
@@ -171,7 +182,7 @@ class TestRAHasherService:
         )
 
     @pytest.mark.asyncio
-    async def test_calculate_hash_different_platforms(self, service):
+    async def test_calculate_hash_different_platforms(self, service: RAHasherService):
         """Test hash calculation for different platforms."""
         test_cases = [
             (3, "/path/to/game.smc", "snes"),
@@ -188,11 +199,10 @@ class TestRAHasherService:
             with patch(
                 "asyncio.create_subprocess_exec", return_value=mock_proc
             ) as mock_subprocess:
-                with patch(
-                    "handler.metadata.ra_handler.RA_ID_TO_SLUG",
-                    {platform_id: platform_slug},
-                ):
-                    result = await service.calculate_hash(platform_id, file_path)
+                result = await service.calculate_hash(
+                    {"ra_id": platform_id, "slug": platform_slug},
+                    file_path,
+                )
 
             assert result == "a1b2c3d4e5f6789012345678901234ab"
             mock_subprocess.assert_called_with(
@@ -204,31 +214,114 @@ class TestRAHasherService:
             )
 
     @pytest.mark.asyncio
-    async def test_calculate_hash_stderr_handling(self, service):
+    async def test_calculate_hash_stderr_handling(self, service: RAHasherService):
         """Test proper handling of stderr when RAHasher fails."""
         mock_proc = AsyncMock()
         mock_proc.wait.return_value = 2
         mock_proc.stderr.read.return_value = b"File not supported"
 
         with patch("asyncio.create_subprocess_exec", return_value=mock_proc):
-            with patch("handler.metadata.ra_handler.RA_ID_TO_SLUG", {7: "nes"}):
-                result = await service.calculate_hash(7, "/path/to/game.nes")
+            result = await service.calculate_hash(
+                {"ra_id": 7, "slug": "nes"}, "/path/to/game.nes"
+            )
 
         assert result == ""
         mock_proc.stderr.read.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_calculate_hash_stderr_none(self, service):
+    async def test_calculate_hash_stderr_none(self, service: RAHasherService):
         """Test handling when stderr is None."""
         mock_proc = AsyncMock()
         mock_proc.wait.return_value = 2
         mock_proc.stderr = None
 
         with patch("asyncio.create_subprocess_exec", return_value=mock_proc):
-            with patch("handler.metadata.ra_handler.RA_ID_TO_SLUG", {7: "nes"}):
-                result = await service.calculate_hash(7, "/path/to/game.nes")
+            result = await service.calculate_hash(
+                {"ra_id": 7, "slug": "nes"}, "/path/to/game.nes"
+            )
 
         assert result == ""
+
+
+class TestRAHasherArchiveSkip:
+    """Verify RAHasher is skipped when an archive is fed to a disc-based platform."""
+
+    @pytest.fixture
+    def service(self):
+        return RAHasherService()
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize(
+        "ups,ext",
+        [
+            (UPS.PSP, ".zip"),
+            (UPS.PS2, ".7z"),
+            (UPS.PSX, ".tar"),
+            (UPS.SATURN, ".gz"),
+            (UPS.DC, ".bz2"),
+            (UPS.WII, ".rar"),
+        ],
+    )
+    async def test_skips_subprocess_for_archive_on_disc_platform(
+        self, service: RAHasherService, ups, ext
+    ):
+        """No subprocess should be spawned; calculate_hash returns '' immediately."""
+        assert ups in RA_BUFFER_HASH_UNSUPPORTED
+        platform_id = PLATFORM_SLUG_TO_RETROACHIEVEMENTS_ID[ups]
+
+        with patch("asyncio.create_subprocess_exec") as mock_subprocess:
+            result = await service.calculate_hash(
+                {"ra_id": platform_id, "slug": "disc-platform"},
+                f"/path/to/game{ext}",
+            )
+
+        assert result == ""
+        mock_subprocess.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_does_not_skip_archive_for_cartridge_platform(
+        self, service: RAHasherService
+    ):
+        """Cartridge platforms (e.g. NES) support buffer hash; don't skip."""
+        assert UPS.NES not in RA_BUFFER_HASH_UNSUPPORTED
+        nes_id = PLATFORM_SLUG_TO_RETROACHIEVEMENTS_ID[UPS.NES]
+
+        mock_proc = AsyncMock()
+        mock_proc.wait.return_value = 0
+        mock_proc.stdout.read.return_value = b"a1b2c3d4e5f6789012345678901234ab\n"
+        mock_proc.stderr = None
+
+        with patch(
+            "asyncio.create_subprocess_exec", return_value=mock_proc
+        ) as mock_subprocess:
+            result = await service.calculate_hash(
+                {"ra_id": nes_id, "slug": "nes"}, "/path/to/game.zip"
+            )
+
+        assert result == "a1b2c3d4e5f6789012345678901234ab"
+        mock_subprocess.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_does_not_skip_raw_iso_for_disc_platform(
+        self, service: RAHasherService
+    ):
+        """Raw disc images must still go through RAHasher for disc platforms."""
+        platform_id = PLATFORM_SLUG_TO_RETROACHIEVEMENTS_ID[UPS.PSP]
+
+        mock_proc = AsyncMock()
+        mock_proc.wait.return_value = 0
+        mock_proc.stdout.read.return_value = b"a1b2c3d4e5f6789012345678901234ab\n"
+        mock_proc.stderr = None
+
+        with patch(
+            "asyncio.create_subprocess_exec", return_value=mock_proc
+        ) as mock_subprocess:
+            result = await service.calculate_hash(
+                {"ra_id": platform_id, "slug": "psp"}, "/path/to/game.iso"
+            )
+
+        assert result == "a1b2c3d4e5f6789012345678901234ab"
+        mock_subprocess.assert_called_once()
 
 
 class TestRAHasherError:
@@ -252,30 +345,6 @@ class TestRAHasherError:
             assert str(e) == message
 
 
-# Integration-style tests (these would use real RAHasher if available)
-class TestRAHasherServiceIntegration:
-    """Integration tests for RAHasher service (requires RAHasher executable)."""
-
-    @pytest.fixture
-    def service(self):
-        """Create a RAHasherService instance for integration testing."""
-        return RAHasherService()
-
-    @pytest.mark.asyncio
-    @pytest.mark.skipif(True, reason="Requires RAHasher executable and test ROM files")
-    async def test_calculate_hash_real_rahasher(self, service):
-        """Test with real RAHasher executable (skipped by default)."""
-        # This test would require:
-        # 1. RAHasher executable in PATH
-        # 2. A test ROM file
-        # 3. Known expected hash for that ROM
-
-        # Example (uncomment and modify for real testing):
-        # result = await service.calculate_hash(7, "/path/to/test.nes")
-        # assert result == "expected_hash_value"
-        pass
-
-
 # Performance tests
 class TestRAHasherServicePerformance:
     """Performance tests for RAHasher service."""
@@ -286,7 +355,7 @@ class TestRAHasherServicePerformance:
         return RAHasherService()
 
     @pytest.mark.asyncio
-    async def test_concurrent_hash_calculations(self, service):
+    async def test_concurrent_hash_calculations(self, service: RAHasherService):
         """Test multiple concurrent hash calculations."""
         mock_proc = AsyncMock()
         mock_proc.wait.return_value = 0
@@ -294,12 +363,14 @@ class TestRAHasherServicePerformance:
         mock_proc.stderr = None
 
         with patch("asyncio.create_subprocess_exec", return_value=mock_proc):
-            with patch("handler.metadata.ra_handler.RA_ID_TO_SLUG", {7: "nes"}):
-                # Run 5 concurrent hash calculations
-                tasks = [
-                    service.calculate_hash(7, f"/path/to/game{i}.nes") for i in range(5)
-                ]
-                results = await asyncio.gather(*tasks)
+            # Run 5 concurrent hash calculations
+            tasks = [
+                service.calculate_hash(
+                    {"ra_id": 7, "slug": "nes"}, f"/path/to/game{i}.nes"
+                )
+                for i in range(5)
+            ]
+            results = await asyncio.gather(*tasks)
 
         # All should succeed
         assert all(result == "a1b2c3d4e5f6789012345678901234ab" for result in results)
