@@ -504,6 +504,31 @@ watch(
                 <span>{{ currentPlatform.hasheous_id }}</span>
               </v-chip>
             </a>
+            <a
+              v-if="currentPlatform.tgdb_id"
+              style="text-decoration: none; color: inherit"
+              :href="`https://thegamesdb.net/platform.php?id=${currentPlatform.tgdb_id}`"
+              target="_blank"
+              class="ml-1"
+              :tabindex="tabIndex"
+            >
+              <v-chip
+                class="pl-0 mt-1"
+                size="small"
+                title="TheGamesDB ID"
+                @click.stop
+              >
+                <v-avatar
+                  variant="text"
+                  class="mr-2 bg-surface pa-1"
+                  size="30"
+                  rounded="0"
+                >
+                  <v-img src="/assets/scrappers/tgdb.png" />
+                </v-avatar>
+                <span>{{ currentPlatform.tgdb_id }}</span>
+              </v-chip>
+            </a>
             <v-chip
               v-if="currentPlatform.flashpoint_id"
               class="px-0 ml-1 mt-1"
