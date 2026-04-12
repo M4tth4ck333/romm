@@ -173,6 +173,7 @@ class Rom(BaseModel):
         Index("idx_roms_flashpoint_id", "flashpoint_id"),
         Index("idx_roms_hltb_id", "hltb_id"),
         Index("idx_roms_gamelist_id", "gamelist_id"),
+        Index("idx_roms_platform_id_fs_name", "platform_id", "fs_name"),
     )
 
     fs_name: Mapped[str] = mapped_column(String(length=FILE_NAME_MAX_LENGTH))

@@ -243,20 +243,6 @@ async def _identify_rom(
     if redis_client.get(STOP_SCAN_FLAG):
         return
 
-    if not _should_scan_rom(
-        scan_type=scan_type,
-        rom=rom,
-        roms_ids=roms_ids,
-        metadata_sources=metadata_sources,
-    ):
-        if rom:
-            # Just to update the filesystem data
-            db_rom_handler.update_rom(
-                rom.id, {"fs_name": fs_rom["fs_name"], "missing_from_fs": False}
-            )
-
-        return
-
     # Update properties that don't require metadata
     parsed_tags = fs_rom_handler.parse_tags(fs_rom["fs_name"])
     roms_path = fs_rom_handler.get_roms_fs_structure(platform.fs_slug)
@@ -533,7 +519,6 @@ async def _identify_platform(
         new_firmware=new_firmware,
     )
 
-    # Scanning roms
     try:
         fs_roms = await fs_rom_handler.get_roms(platform)
     except RomsNotFoundException as e:
@@ -572,19 +557,41 @@ async def _identify_platform(
             fs_names={fs_rom["fs_name"] for fs_rom in fs_roms_batch},
         )
 
-        # Process ROMs concurrently within the batch
-        scan_tasks = [
-            scan_rom_with_semaphore(
-                fs_rom=fs_rom, rom=roms_by_fs_name.get(fs_rom["fs_name"])
+        # Separate skipped ROMs from those that need scanning
+        skipped_rom_ids: list[int] = []
+        roms_to_scan: list[tuple[FSRom, Rom | None]] = []
+
+        for fs_rom in fs_roms_batch:
+            rom = roms_by_fs_name.get(fs_rom["fs_name"])
+            if _should_scan_rom(
+                scan_type=scan_type,
+                rom=rom,
+                roms_ids=roms_ids,
+                metadata_sources=metadata_sources,
+            ):
+                roms_to_scan.append((fs_rom, rom))
+            elif rom:
+                skipped_rom_ids.append(rom.id)
+
+        # Bulk update all skipped ROMs in one query instead of per-ROM updates
+        if skipped_rom_ids:
+            db_rom_handler.bulk_mark_present(platform.id, skipped_rom_ids)
+            await scan_stats.increment(
+                socket_manager=socket_manager,
+                scanned_roms=len(skipped_rom_ids),
             )
-            for fs_rom in fs_roms_batch
+
+        # Process only ROMs that actually need scanning
+        scan_tasks = [
+            scan_rom_with_semaphore(fs_rom=fs_rom, rom=rom)
+            for fs_rom, rom in roms_to_scan
         ]
 
-        # Wait for all ROMs in the batch to complete
-        batched_results = await asyncio.gather(*scan_tasks, return_exceptions=True)
-        for result, fs_rom in zip(batched_results, fs_roms_batch, strict=False):
-            if isinstance(result, Exception):
-                log.error(f"Error scanning ROM {fs_rom['fs_name']}: {result}")
+        if scan_tasks:
+            batched_results = await asyncio.gather(*scan_tasks, return_exceptions=True)
+            for result, (fs_rom, _) in zip(batched_results, roms_to_scan, strict=False):
+                if isinstance(result, Exception):
+                    log.error(f"Error scanning ROM {fs_rom['fs_name']}: {result}")
 
     missing_roms = db_rom_handler.mark_missing_roms(
         platform.id, [rom["fs_name"] for rom in fs_roms]
@@ -645,12 +652,12 @@ async def scan_platforms(
     if MetadataSource.HLTB in metadata_sources:
         meta_hltb_handler.initialize()
 
-    # Precalculate total platforms and ROMs
     total_roms = 0
     for platform_slug in fs_platforms:
         try:
-            fs_roms = await fs_rom_handler.get_roms(Platform(fs_slug=platform_slug))
-            total_roms += len(fs_roms)
+            total_roms += await fs_rom_handler.count_roms(
+                Platform(fs_slug=platform_slug)
+            )
         except RomsNotFoundException as e:
             log.error(e)
 

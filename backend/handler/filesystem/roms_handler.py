@@ -680,6 +680,21 @@ class FSRomsHandler(FSHandler):
                 rom_sha1_h,
             )
 
+    async def count_roms(self, platform: Platform) -> int:
+        """Return the number of filesystem roms for a platform without
+        materializing FSRom objects.
+        """
+        try:
+            rel_roms_path = self.get_roms_fs_structure(platform.fs_slug)
+            fs_single_roms = await self.list_files(path=rel_roms_path)
+            fs_multi_roms = await self.list_directories(path=rel_roms_path)
+        except FileNotFoundError as e:
+            raise RomsNotFoundException(platform=platform.fs_slug) from e
+
+        return len(self.exclude_single_files(fs_single_roms)) + len(
+            self.exclude_multi_roms(fs_multi_roms)
+        )
+
     async def get_roms(self, platform: Platform) -> list[FSRom]:
         """Gets all filesystem roms for a platform
 
