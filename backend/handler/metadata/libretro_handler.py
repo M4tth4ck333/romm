@@ -1,3 +1,4 @@
+import asyncio
 import hashlib
 import os
 import re
@@ -5,12 +6,27 @@ from typing import Final, NotRequired, TypedDict
 
 from adapters.services.libretro_thumbnails import LibretroThumbnailsService
 from adapters.services.libretro_thumbnails_types import LibretroArtType
+from config.config_manager import MetadataMediaType
+from config.config_manager import config_manager as cm
 from logger.logger import log
 
 from .base_handler import MetadataHandler
 from .base_handler import UniversalPlatformSlug as UPS
 
 _PAREN_TAG_PATTERN = re.compile(r"\([^)]*\)")
+
+# Only fetched when the user has the corresponding MetadataMediaType in SCAN_MEDIA
+_GATED_ART_TYPES: list[tuple[LibretroArtType, MetadataMediaType]] = [
+    (LibretroArtType.SCREENSHOT, MetadataMediaType.SCREENSHOT),
+    (LibretroArtType.TITLE_SCREEN, MetadataMediaType.TITLE_SCREEN),
+    (LibretroArtType.LOGO, MetadataMediaType.LOGO),
+]
+
+
+def get_preferred_media_types() -> list[MetadataMediaType]:
+    """Get preferred media types from config."""
+    config = cm.get_config()
+    return [MetadataMediaType(media) for media in config.SCAN_MEDIA]
 
 
 class LibretroPlatform(TypedDict):
@@ -21,6 +37,7 @@ class LibretroPlatform(TypedDict):
 class LibretroRom(TypedDict):
     libretro_id: str | None
     url_cover: NotRequired[str]
+    url_screenshots: NotRequired[list[str]]
     name: NotRequired[str]
 
 
@@ -116,33 +133,59 @@ class LibretroHandler(MetadataHandler):
         return self._find_fuzzy_match(target, listing)
 
     async def get_rom(self, fs_name: str, platform_slug: str) -> LibretroRom:
-        """Find box art for a ROM on the libretro thumbnail server.
+        """Find libretro artwork for a ROM.
 
-        Scan-time callers use the returned `url_cover`. `name` is deliberately
-        omitted because libretro artwork filenames are not proper game names —
-        letting them overwrite a real name from IGDB/Moby would be wrong.
+        Always fetches Named_Boxarts (used for `url_cover` and `libretro_id`).
+        Additionally fetches Named_Snaps / Named_Titles / Named_Logos when the
+        matching MetadataMediaType (SCREENSHOT / TITLE_SCREEN / LOGO) is in
+        SCAN_MEDIA, and appends any matches to `url_screenshots` so the
+        scan_handler artwork loop picks them up. `name` is deliberately
+        omitted — libretro artwork filenames aren't proper game names.
         """
         platform = self.get_platform(platform_slug)
         if not platform or not platform["libretro_slug"]:
             return LibretroRom(libretro_id=None)
 
-        listing = await self.service.fetch_listing(
-            platform["libretro_slug"], LibretroArtType.BOX_ART
+        system_name = platform["libretro_slug"]
+
+        preferred = get_preferred_media_types()
+        extra_art_types = [art for art, media in _GATED_ART_TYPES if media in preferred]
+        art_types = [LibretroArtType.BOX_ART, *extra_art_types]
+
+        listings = await asyncio.gather(
+            *(self.service.fetch_listing(system_name, t) for t in art_types)
         )
-        if not listing:
+        box_listing = listings[0]
+        if not box_listing:
             return LibretroRom(libretro_id=None)
 
-        matched = self._find_matching_art(fs_name, listing)
+        matched = self._find_matching_art(fs_name, box_listing)
         if not matched:
             return LibretroRom(libretro_id=None)
 
-        url = LibretroThumbnailsService.build_art_url(
-            platform["libretro_slug"], LibretroArtType.BOX_ART, matched
+        url_cover = LibretroThumbnailsService.build_art_url(
+            system_name, LibretroArtType.BOX_ART, matched
         )
-        return LibretroRom(
+
+        url_screenshots: list[str] = []
+        for art_type, listing in zip(extra_art_types, listings[1:]):
+            if not listing:
+                continue
+            extra = self._find_matching_art(fs_name, listing)
+            if extra:
+                url_screenshots.append(
+                    LibretroThumbnailsService.build_art_url(
+                        system_name, art_type, extra
+                    )
+                )
+
+        rom = LibretroRom(
             libretro_id=libretro_id_for(matched),
-            url_cover=url,
+            url_cover=url_cover,
         )
+        if url_screenshots:
+            rom["url_screenshots"] = url_screenshots
+        return rom
 
 
 LIBRETRO_PLATFORM_LIST: Final[dict[UPS, str]] = {

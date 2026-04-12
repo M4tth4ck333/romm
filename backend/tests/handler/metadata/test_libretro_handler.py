@@ -7,6 +7,7 @@ import pytest
 
 from adapters.services.libretro_thumbnails import LibretroThumbnailsService
 from adapters.services.libretro_thumbnails_types import LibretroArtType
+from config.config_manager import MetadataMediaType
 from handler.metadata.libretro_handler import (
     LIBRETRO_PLATFORM_LIST,
     LibretroHandler,
@@ -130,11 +131,18 @@ async def test_get_rom_unsupported_platform_returns_empty(handler: LibretroHandl
 
 @pytest.mark.asyncio
 async def test_get_rom_matched_returns_cover_url(handler: LibretroHandler):
-    with patch.object(
-        handler.service,
-        "fetch_listing",
-        AsyncMock(return_value=PSX_LISTING),
-    ) as mock_fetch:
+    # Isolate from SCAN_MEDIA defaults so this test only exercises box art.
+    with (
+        patch.object(
+            handler.service,
+            "fetch_listing",
+            AsyncMock(return_value=PSX_LISTING),
+        ) as mock_fetch,
+        patch(
+            "handler.metadata.libretro_handler.get_preferred_media_types",
+            return_value=[],
+        ),
+    ):
         result = await handler.get_rom(
             "Castlevania - Symphony of the Night (Europe).iso", "psx"
         )
@@ -152,6 +160,65 @@ async def test_get_rom_matched_returns_cover_url(handler: LibretroHandler):
     # Scan path intentionally does not populate `name` so it doesn't
     # overwrite a real IGDB name.
     assert "name" not in result
+    # No extra art types requested, so url_screenshots is absent.
+    assert "url_screenshots" not in result
+
+
+@pytest.mark.asyncio
+async def test_get_rom_fetches_extra_art_when_preferred(handler: LibretroHandler):
+    """SCREENSHOT/TITLE_SCREEN/LOGO in SCAN_MEDIA trigger the corresponding
+    Named_Snaps/Named_Titles/Named_Logos fetches; matches land in
+    url_screenshots so the scan_handler artwork loop can pick them up."""
+    with (
+        patch.object(
+            handler.service,
+            "fetch_listing",
+            AsyncMock(return_value=PSX_LISTING),
+        ) as mock_fetch,
+        patch(
+            "handler.metadata.libretro_handler.get_preferred_media_types",
+            return_value=[
+                MetadataMediaType.SCREENSHOT,
+                MetadataMediaType.TITLE_SCREEN,
+                MetadataMediaType.LOGO,
+            ],
+        ),
+    ):
+        result = await handler.get_rom(
+            "Castlevania - Symphony of the Night (Europe).iso", "psx"
+        )
+
+    # Box art + three extras = four listings fetched in parallel.
+    assert mock_fetch.await_count == 4
+    screenshots = result.get("url_screenshots", [])
+    assert len(screenshots) == 3
+    assert any("Named_Snaps" in s for s in screenshots)
+    assert any("Named_Titles" in s for s in screenshots)
+    assert any("Named_Logos" in s for s in screenshots)
+    # url_cover still comes from Named_Boxarts.
+    assert "Named_Boxarts" in result.get("url_cover", "")
+
+
+@pytest.mark.asyncio
+async def test_get_rom_skips_extra_art_when_not_preferred(handler: LibretroHandler):
+    """Only Named_Boxarts is fetched when no extra media types are in SCAN_MEDIA."""
+    with (
+        patch.object(
+            handler.service,
+            "fetch_listing",
+            AsyncMock(return_value=PSX_LISTING),
+        ) as mock_fetch,
+        patch(
+            "handler.metadata.libretro_handler.get_preferred_media_types",
+            return_value=[MetadataMediaType.BOX2D, MetadataMediaType.MANUAL],
+        ),
+    ):
+        result = await handler.get_rom(
+            "Castlevania - Symphony of the Night (Europe).iso", "psx"
+        )
+
+    mock_fetch.assert_awaited_once()
+    assert "url_screenshots" not in result
 
 
 def test_libretro_id_for_is_deterministic():
