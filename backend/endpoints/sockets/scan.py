@@ -231,7 +231,6 @@ async def _identify_rom(
     launchbox_remote_enabled: bool,
     socket_manager: socketio.AsyncRedisManager,
     scan_stats: ScanStats,
-    calculate_hashes: bool = True,
 ) -> None:
     # Break early if the flag is set
     if redis_client.get(STOP_SCAN_FLAG):
@@ -444,7 +443,6 @@ async def _identify_platform(
     launchbox_remote_enabled: bool,
     socket_manager: socketio.AsyncRedisManager,
     scan_stats: ScanStats,
-    calculate_hashes: bool = True,
 ) -> ScanStats:
     # Stop the scan if the flag is set
     if redis_client.get(STOP_SCAN_FLAG):
@@ -542,7 +540,6 @@ async def _identify_platform(
                 launchbox_remote_enabled=launchbox_remote_enabled,
                 socket_manager=socket_manager,
                 scan_stats=scan_stats,
-                calculate_hashes=calculate_hashes,
             )
 
     for fs_roms_batch in batched(fs_roms, 200, strict=False):
@@ -622,10 +619,6 @@ async def scan_platforms(
         scan_type (ScanType): Type of scan to be performed.
         roms_ids (list[int], optional): List of selected roms to be scanned.
     """
-
-    # Get hash calculation setting from config
-    calculate_hashes = not cm.get_config().SKIP_HASH_CALCULATION
-
     if not roms_ids:
         roms_ids = []
 
@@ -694,7 +687,6 @@ async def scan_platforms(
                 launchbox_remote_enabled=launchbox_remote_enabled,
                 socket_manager=socket_manager,
                 scan_stats=scan_stats,
-                calculate_hashes=calculate_hashes,
             )
 
         missed_platforms = db_platform_handler.mark_missing_platforms(fs_platforms)
