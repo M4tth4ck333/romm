@@ -1,5 +1,4 @@
-import json
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 import pytest
 from fastapi import status
@@ -361,7 +360,7 @@ class TestAddRomsToCollection:
         self, client, access_token: str, collection: Collection, rom: Rom
     ):
         # Record time before call (truncated to seconds to match MariaDB precision)
-        before_call = datetime.utcnow().replace(microsecond=0)
+        before_call = datetime.now(timezone.utc).replace(microsecond=0, tzinfo=None)
 
         client.post(
             f"/api/collections/{collection.id}/roms",
@@ -393,13 +392,11 @@ class TestRemoveRomsFromCollection:
     ):
         self._seed(client, access_token, collection.id, [rom.id])
 
-        response = client.delete(
+        response = client.request(
+            "DELETE",
             f"/api/collections/{collection.id}/roms",
-            data=json.dumps({"rom_ids": [rom.id]}),
-            headers={
-                "Authorization": f"Bearer {access_token}",
-                "Content-Type": "application/json",
-            },
+            json={"rom_ids": [rom.id]},
+            headers={"Authorization": f"Bearer {access_token}"},
         )
 
         assert response.status_code == status.HTTP_200_OK
@@ -417,13 +414,11 @@ class TestRemoveRomsFromCollection:
     ):
         self._seed(client, access_token, collection.id, [rom.id, second_rom.id])
 
-        response = client.delete(
+        response = client.request(
+            "DELETE",
             f"/api/collections/{collection.id}/roms",
-            data=json.dumps({"rom_ids": [rom.id]}),
-            headers={
-                "Authorization": f"Bearer {access_token}",
-                "Content-Type": "application/json",
-            },
+            json={"rom_ids": [rom.id]},
+            headers={"Authorization": f"Bearer {access_token}"},
         )
 
         assert response.status_code == status.HTTP_200_OK
@@ -436,13 +431,11 @@ class TestRemoveRomsFromCollection:
         self, client, access_token: str, collection: Collection, rom: Rom
     ):
         """Removing a ROM that isn't in the collection should not raise an error."""
-        response = client.delete(
+        response = client.request(
+            "DELETE",
             f"/api/collections/{collection.id}/roms",
-            data=json.dumps({"rom_ids": [rom.id]}),
-            headers={
-                "Authorization": f"Bearer {access_token}",
-                "Content-Type": "application/json",
-            },
+            json={"rom_ids": [rom.id]},
+            headers={"Authorization": f"Bearer {access_token}"},
         )
 
         assert response.status_code == status.HTTP_200_OK
@@ -451,13 +444,11 @@ class TestRemoveRomsFromCollection:
     def test_returns_404_for_missing_collection(
         self, client, access_token: str, rom: Rom
     ):
-        response = client.delete(
+        response = client.request(
+            "DELETE",
             "/api/collections/999999/roms",
-            data=json.dumps({"rom_ids": [rom.id]}),
-            headers={
-                "Authorization": f"Bearer {access_token}",
-                "Content-Type": "application/json",
-            },
+            json={"rom_ids": [rom.id]},
+            headers={"Authorization": f"Bearer {access_token}"},
         )
         assert response.status_code == status.HTTP_404_NOT_FOUND
 
@@ -468,21 +459,19 @@ class TestRemoveRomsFromCollection:
         other_user_collection: Collection,
         rom: Rom,
     ):
-        response = client.delete(
+        response = client.request(
+            "DELETE",
             f"/api/collections/{other_user_collection.id}/roms",
-            data=json.dumps({"rom_ids": [rom.id]}),
-            headers={
-                "Authorization": f"Bearer {access_token}",
-                "Content-Type": "application/json",
-            },
+            json={"rom_ids": [rom.id]},
+            headers={"Authorization": f"Bearer {access_token}"},
         )
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
     def test_requires_auth(self, client, collection: Collection, rom: Rom):
-        response = client.delete(
+        response = client.request(
+            "DELETE",
             f"/api/collections/{collection.id}/roms",
-            data=json.dumps({"rom_ids": [rom.id]}),
-            headers={"Content-Type": "application/json"},
+            json={"rom_ids": [rom.id]},
         )
         assert response.status_code in (
             status.HTTP_401_UNAUTHORIZED,
@@ -494,15 +483,13 @@ class TestRemoveRomsFromCollection:
     ):
         self._seed(client, access_token, collection.id, [rom.id])
         # Record time before the remove call (truncated to seconds for MariaDB precision)
-        before_remove = datetime.utcnow().replace(microsecond=0)
+        before_remove = datetime.now(timezone.utc).replace(microsecond=0, tzinfo=None)
 
-        client.delete(
+        client.request(
+            "DELETE",
             f"/api/collections/{collection.id}/roms",
-            data=json.dumps({"rom_ids": [rom.id]}),
-            headers={
-                "Authorization": f"Bearer {access_token}",
-                "Content-Type": "application/json",
-            },
+            json={"rom_ids": [rom.id]},
+            headers={"Authorization": f"Bearer {access_token}"},
         )
 
         refreshed = db_collection_handler.get_collection(collection.id)
@@ -562,13 +549,11 @@ class TestAtomicBehavior:
             json={"rom_ids": [rom.id, second_rom.id]},
             headers={"Authorization": f"Bearer {access_token}"},
         )
-        client.delete(
+        client.request(
+            "DELETE",
             f"/api/collections/{collection.id}/roms",
-            data=json.dumps({"rom_ids": [rom.id]}),
-            headers={
-                "Authorization": f"Bearer {access_token}",
-                "Content-Type": "application/json",
-            },
+            json={"rom_ids": [rom.id]},
+            headers={"Authorization": f"Bearer {access_token}"},
         )
         client.post(
             f"/api/collections/{collection.id}/roms",
