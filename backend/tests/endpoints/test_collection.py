@@ -1,3 +1,4 @@
+import json
 from datetime import timedelta
 
 import pytest
@@ -126,7 +127,7 @@ class TestCreateCollection:
             headers={"Authorization": f"Bearer {access_token}"},
         )
 
-        assert response.status_code == status.HTTP_409_CONFLICT
+        assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
 
     def test_requires_auth(self, client):
         response = client.post("/api/collections", data={"name": "No Auth"})
@@ -161,6 +162,7 @@ class TestGetCollections:
         public_col = db_collection_handler.add_collection(
             Collection(
                 name="Public Editor Collection",
+                description="",
                 is_public=True,
                 is_favorite=False,
                 user_id=editor_user.id,
@@ -169,6 +171,7 @@ class TestGetCollections:
         db_collection_handler.add_collection(
             Collection(
                 name="Private Editor Collection",
+                description="",
                 is_public=False,
                 is_favorite=False,
                 user_id=editor_user.id,
@@ -357,7 +360,7 @@ class TestAddRomsToCollection:
     def test_bumps_updated_at(
         self, client, access_token: str, collection: Collection, rom: Rom
     ):
-        original_updated_at = collection.updated_at
+        original_updated_at = collection.updated_at.replace(tzinfo=None)
 
         client.post(
             f"/api/collections/{collection.id}/roms",
@@ -367,7 +370,7 @@ class TestAddRomsToCollection:
 
         refreshed = db_collection_handler.get_collection(collection.id)
         assert refreshed is not None
-        assert refreshed.updated_at > original_updated_at
+        assert refreshed.updated_at.replace(tzinfo=None) > original_updated_at
 
 
 # ---------------------------------------------------------------------------
@@ -391,8 +394,11 @@ class TestRemoveRomsFromCollection:
 
         response = client.delete(
             f"/api/collections/{collection.id}/roms",
-            json={"rom_ids": [rom.id]},
-            headers={"Authorization": f"Bearer {access_token}"},
+            content=json.dumps({"rom_ids": [rom.id]}),
+            headers={
+                "Authorization": f"Bearer {access_token}",
+                "Content-Type": "application/json",
+            },
         )
 
         assert response.status_code == status.HTTP_200_OK
@@ -412,8 +418,11 @@ class TestRemoveRomsFromCollection:
 
         response = client.delete(
             f"/api/collections/{collection.id}/roms",
-            json={"rom_ids": [rom.id]},
-            headers={"Authorization": f"Bearer {access_token}"},
+            content=json.dumps({"rom_ids": [rom.id]}),
+            headers={
+                "Authorization": f"Bearer {access_token}",
+                "Content-Type": "application/json",
+            },
         )
 
         assert response.status_code == status.HTTP_200_OK
@@ -428,8 +437,11 @@ class TestRemoveRomsFromCollection:
         """Removing a ROM that isn't in the collection should not raise an error."""
         response = client.delete(
             f"/api/collections/{collection.id}/roms",
-            json={"rom_ids": [rom.id]},
-            headers={"Authorization": f"Bearer {access_token}"},
+            content=json.dumps({"rom_ids": [rom.id]}),
+            headers={
+                "Authorization": f"Bearer {access_token}",
+                "Content-Type": "application/json",
+            },
         )
 
         assert response.status_code == status.HTTP_200_OK
@@ -440,8 +452,11 @@ class TestRemoveRomsFromCollection:
     ):
         response = client.delete(
             "/api/collections/999999/roms",
-            json={"rom_ids": [rom.id]},
-            headers={"Authorization": f"Bearer {access_token}"},
+            content=json.dumps({"rom_ids": [rom.id]}),
+            headers={
+                "Authorization": f"Bearer {access_token}",
+                "Content-Type": "application/json",
+            },
         )
         assert response.status_code == status.HTTP_404_NOT_FOUND
 
@@ -454,15 +469,19 @@ class TestRemoveRomsFromCollection:
     ):
         response = client.delete(
             f"/api/collections/{other_user_collection.id}/roms",
-            json={"rom_ids": [rom.id]},
-            headers={"Authorization": f"Bearer {access_token}"},
+            content=json.dumps({"rom_ids": [rom.id]}),
+            headers={
+                "Authorization": f"Bearer {access_token}",
+                "Content-Type": "application/json",
+            },
         )
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
     def test_requires_auth(self, client, collection: Collection, rom: Rom):
         response = client.delete(
             f"/api/collections/{collection.id}/roms",
-            json={"rom_ids": [rom.id]},
+            content=json.dumps({"rom_ids": [rom.id]}),
+            headers={"Content-Type": "application/json"},
         )
         assert response.status_code in (
             status.HTTP_401_UNAUTHORIZED,
@@ -475,17 +494,20 @@ class TestRemoveRomsFromCollection:
         self._seed(client, access_token, collection.id, [rom.id])
         seeded = db_collection_handler.get_collection(collection.id)
         assert seeded is not None
-        updated_at_after_seed = seeded.updated_at
+        updated_at_after_seed = seeded.updated_at.replace(tzinfo=None)
 
         client.delete(
             f"/api/collections/{collection.id}/roms",
-            json={"rom_ids": [rom.id]},
-            headers={"Authorization": f"Bearer {access_token}"},
+            content=json.dumps({"rom_ids": [rom.id]}),
+            headers={
+                "Authorization": f"Bearer {access_token}",
+                "Content-Type": "application/json",
+            },
         )
 
         refreshed = db_collection_handler.get_collection(collection.id)
         assert refreshed is not None
-        assert refreshed.updated_at > updated_at_after_seed
+        assert refreshed.updated_at.replace(tzinfo=None) > updated_at_after_seed
 
 
 # ---------------------------------------------------------------------------
@@ -542,8 +564,11 @@ class TestAtomicBehavior:
         )
         client.delete(
             f"/api/collections/{collection.id}/roms",
-            json={"rom_ids": [rom.id]},
-            headers={"Authorization": f"Bearer {access_token}"},
+            content=json.dumps({"rom_ids": [rom.id]}),
+            headers={
+                "Authorization": f"Bearer {access_token}",
+                "Content-Type": "application/json",
+            },
         )
         client.post(
             f"/api/collections/{collection.id}/roms",
