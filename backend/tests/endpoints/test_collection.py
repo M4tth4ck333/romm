@@ -1,5 +1,5 @@
 import json
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 import pytest
 from fastapi import status
@@ -360,7 +360,8 @@ class TestAddRomsToCollection:
     def test_bumps_updated_at(
         self, client, access_token: str, collection: Collection, rom: Rom
     ):
-        original_updated_at = collection.updated_at.replace(tzinfo=None)
+        # Record time before call (truncated to seconds to match MariaDB precision)
+        before_call = datetime.utcnow().replace(microsecond=0)
 
         client.post(
             f"/api/collections/{collection.id}/roms",
@@ -370,7 +371,7 @@ class TestAddRomsToCollection:
 
         refreshed = db_collection_handler.get_collection(collection.id)
         assert refreshed is not None
-        assert refreshed.updated_at.replace(tzinfo=None) > original_updated_at
+        assert refreshed.updated_at.replace(tzinfo=None) >= before_call
 
 
 # ---------------------------------------------------------------------------
@@ -394,7 +395,7 @@ class TestRemoveRomsFromCollection:
 
         response = client.delete(
             f"/api/collections/{collection.id}/roms",
-            content=json.dumps({"rom_ids": [rom.id]}),
+            data=json.dumps({"rom_ids": [rom.id]}),
             headers={
                 "Authorization": f"Bearer {access_token}",
                 "Content-Type": "application/json",
@@ -418,7 +419,7 @@ class TestRemoveRomsFromCollection:
 
         response = client.delete(
             f"/api/collections/{collection.id}/roms",
-            content=json.dumps({"rom_ids": [rom.id]}),
+            data=json.dumps({"rom_ids": [rom.id]}),
             headers={
                 "Authorization": f"Bearer {access_token}",
                 "Content-Type": "application/json",
@@ -437,7 +438,7 @@ class TestRemoveRomsFromCollection:
         """Removing a ROM that isn't in the collection should not raise an error."""
         response = client.delete(
             f"/api/collections/{collection.id}/roms",
-            content=json.dumps({"rom_ids": [rom.id]}),
+            data=json.dumps({"rom_ids": [rom.id]}),
             headers={
                 "Authorization": f"Bearer {access_token}",
                 "Content-Type": "application/json",
@@ -452,7 +453,7 @@ class TestRemoveRomsFromCollection:
     ):
         response = client.delete(
             "/api/collections/999999/roms",
-            content=json.dumps({"rom_ids": [rom.id]}),
+            data=json.dumps({"rom_ids": [rom.id]}),
             headers={
                 "Authorization": f"Bearer {access_token}",
                 "Content-Type": "application/json",
@@ -469,7 +470,7 @@ class TestRemoveRomsFromCollection:
     ):
         response = client.delete(
             f"/api/collections/{other_user_collection.id}/roms",
-            content=json.dumps({"rom_ids": [rom.id]}),
+            data=json.dumps({"rom_ids": [rom.id]}),
             headers={
                 "Authorization": f"Bearer {access_token}",
                 "Content-Type": "application/json",
@@ -480,7 +481,7 @@ class TestRemoveRomsFromCollection:
     def test_requires_auth(self, client, collection: Collection, rom: Rom):
         response = client.delete(
             f"/api/collections/{collection.id}/roms",
-            content=json.dumps({"rom_ids": [rom.id]}),
+            data=json.dumps({"rom_ids": [rom.id]}),
             headers={"Content-Type": "application/json"},
         )
         assert response.status_code in (
@@ -492,13 +493,12 @@ class TestRemoveRomsFromCollection:
         self, client, access_token: str, collection: Collection, rom: Rom
     ):
         self._seed(client, access_token, collection.id, [rom.id])
-        seeded = db_collection_handler.get_collection(collection.id)
-        assert seeded is not None
-        updated_at_after_seed = seeded.updated_at.replace(tzinfo=None)
+        # Record time before the remove call (truncated to seconds for MariaDB precision)
+        before_remove = datetime.utcnow().replace(microsecond=0)
 
         client.delete(
             f"/api/collections/{collection.id}/roms",
-            content=json.dumps({"rom_ids": [rom.id]}),
+            data=json.dumps({"rom_ids": [rom.id]}),
             headers={
                 "Authorization": f"Bearer {access_token}",
                 "Content-Type": "application/json",
@@ -507,7 +507,7 @@ class TestRemoveRomsFromCollection:
 
         refreshed = db_collection_handler.get_collection(collection.id)
         assert refreshed is not None
-        assert refreshed.updated_at.replace(tzinfo=None) > updated_at_after_seed
+        assert refreshed.updated_at.replace(tzinfo=None) >= before_remove
 
 
 # ---------------------------------------------------------------------------
@@ -564,7 +564,7 @@ class TestAtomicBehavior:
         )
         client.delete(
             f"/api/collections/{collection.id}/roms",
-            content=json.dumps({"rom_ids": [rom.id]}),
+            data=json.dumps({"rom_ids": [rom.id]}),
             headers={
                 "Authorization": f"Bearer {access_token}",
                 "Content-Type": "application/json",
