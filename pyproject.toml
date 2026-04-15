@@ -73,7 +73,7 @@ dev = [
 ]
 test = [
   "fakeredis ~= 2.21",
-  "pytest ~= 8.3",
+  "pytest~=9.0",
   "pytest-asyncio ~= 0.23",
   "pytest-cov ~= 6.2",
   "pytest-env ~= 1.1",
