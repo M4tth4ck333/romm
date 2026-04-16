@@ -311,14 +311,15 @@ onBeforeUnmount(() => {
                   v-if="
                     isOuterHovering ||
                     showGameTitleAlways ||
-                    (romsStore.isSimpleRom(rom) && !rom.path_cover_large) ||
+                    (romsStore.isSimpleRom(rom) && !largeCover) ||
                     (!romsStore.isSimpleRom(rom) &&
                       !rom.igdb_url_cover &&
                       !rom.moby_url_cover &&
                       !rom.ss_url_cover &&
                       !rom.sgdb_url_cover &&
                       !rom.launchbox_url_cover &&
-                      !rom.flashpoint_url_cover)
+                      !rom.flashpoint_url_cover &&
+                      !rom.physical_url_cover)
                   "
                   class="translucent"
                   :class="
