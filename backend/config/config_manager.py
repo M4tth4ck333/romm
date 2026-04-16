@@ -682,7 +682,7 @@ class ConfigManager:
             "filesystem": {
                 "roms_folder": self.config.ROMS_FOLDER_NAME,
                 "firmware_folder": self.config.FIRMWARE_FOLDER_NAME,
-                "skip_hash_calculation": self.config.SKIP_HASH_CALCULATION
+                "skip_hash_calculation": self.config.SKIP_HASH_CALCULATION,
             },
             "system": {
                 "platforms": self.config.PLATFORMS_BINDING,
