@@ -32,36 +32,36 @@ Comprehensive documentation of the RomM frontend: a Vue 3 single-page applicatio
 | Property             | Value                                          |
 | -------------------- | ---------------------------------------------- |
 | **Framework**        | Vue 3.4.27 (Composition API, `<script setup>`) |
-| **Build Tool**       | Vite 6.4.1                                     |
+| **Build Tool**       | Vite 6.4.2                                     |
 | **Language**         | TypeScript 5.7.3 (`noImplicitAny: true`)       |
 | **UI Library**       | Vuetify 3.9.2 (Material Design)                |
 | **CSS**              | Tailwind CSS 4.0.0 + Vuetify themes            |
 | **State Management** | Pinia 3.0.1 (18 stores)                        |
 | **Routing**          | Vue Router 4.3.2                               |
-| **HTTP Client**      | Axios 1.13.5                                   |
+| **HTTP Client**      | Axios 1.15.0                                   |
 | **i18n**             | vue-i18n 11.1.10 (17 languages)                |
 | **Real-time**        | Socket.IO Client 4.7.5                         |
 | **Icons**            | Material Design Icons (MDI) 7.4.47             |
 | **Node**             | 24 (via `.nvmrc`)                              |
 
-**Total:** ~209 Vue components, 18 Pinia stores, 15 API service modules, 28 routes.
+**Total:** ~216 Vue components (168 under `components/`, rest in views/console/layouts), 18 Pinia stores, 17 API service modules, 36 named routes across 3 layouts.
 
 ---
 
 ## 2. High-Level Architecture
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────────┐
 │                        Browser / PWA                             │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                  │
 │   ┌─────────────┐   ┌──────────────┐   ┌───────────────────┐   │
 │   │  Vue Router  │   │  Pinia Stores │   │   Mitt Emitter    │   │
-│   │  (28 routes) │   │  (18 stores)  │   │  (80+ events)     │   │
+│   │  (36 routes) │   │  (18 stores)  │   │  (80+ events)     │   │
 │   └──────┬──────┘   └──────┬───────┘   └────────┬──────────┘   │
 │          │                  │                     │              │
 │   ┌──────v──────────────────v─────────────────────v──────────┐  │
-│   │                    Components (~209)                       │  │
+│   │                    Components (~216)                       │  │
 │   │  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐ │  │
 │   │  │  Gallery  │  │ Details  │  │ Settings │  │ Console  │ │  │
 │   │  │  Mode     │  │  Page    │  │  Pages   │  │  Mode    │ │  │
@@ -85,7 +85,7 @@ Comprehensive documentation of the RomM frontend: a Vue 3 single-page applicatio
 
 ### Layered Architecture
 
-```
+```text
 ┌─────────────────────────────────────────────────────────┐
 │                    PRESENTATION LAYER                     │
 │  views/          Page-level route components              │
@@ -98,7 +98,7 @@ Comprehensive documentation of the RomM frontend: a Vue 3 single-page applicatio
 │  composables/    Reusable stateful logic                  │
 ├─────────────────────────────────────────────────────────┤
 │                    DATA LAYER                             │
-│  services/api/   15 Axios-based API modules               │
+│  services/api/   17 Axios-based API modules               │
 │  services/cache/ Browser Cache API wrapper                │
 │  services/socket Socket.IO client                         │
 ├─────────────────────────────────────────────────────────┤
@@ -116,7 +116,7 @@ Comprehensive documentation of the RomM frontend: a Vue 3 single-page applicatio
 
 ## 3. Directory Structure
 
-```
+```text
 frontend/
 ├── index.html                     # HTML entry point (<div id="app">)
 ├── package.json                   # Dependencies & scripts
@@ -134,7 +134,7 @@ frontend/
     │
     ├── plugins/                   # Vue plugin setup
     │   ├── index.ts               # Plugin registration (Vuetify, Pinia, i18n, Mitt)
-    │   ├── router.ts              # Vue Router (28 routes, guards, permissions)
+    │   ├── router.ts              # Vue Router (36 routes, guards, permissions)
     │   ├── vuetify.ts             # Vuetify instance (themes, icons)
     │   ├── pinia.ts               # Pinia store with router injection
     │   ├── pinia.d.ts             # Pinia type augmentation ($router)
@@ -172,12 +172,12 @@ frontend/
     │   ├── Scan/                  # Scan platform component
     │   └── Settings/              # Settings sub-components (25+)
     │       ├── Administration/    # Users, tokens, tasks
-    │       ├── ClientApiTokens/
-    │       ├── LibraryManagement/
-    │       ├── MetadataSources/
-    │       ├── ServerStats/
-    │       ├── UserInterface/
-    │       └── UserProfile/
+    │       ├── ClientApiTokens/   # API token list, create, pair
+    │       ├── LibraryManagement/ # Platform bindings, exclusions
+    │       ├── MetadataSources/   # Provider config & priority
+    │       ├── ServerStats/       # Library stats widgets
+    │       ├── UserInterface/     # Theme, view, locale
+    │       └── UserProfile/       # Profile, password, avatar
     │
     ├── console/                   # Console mode (TV/gamepad UI)
     │   ├── Layout.vue             # Console layout with input bus
@@ -206,8 +206,8 @@ frontend/
     │   │   ├── config.ts          # Keyboard + gamepad mappings
     │   │   ├── keyboard.ts        # Keyboard listener
     │   │   └── gamepad.ts         # Gamepad polling (rAF)
-    │   ├── constants/             # Console constants
-    │   └── utils/
+    │   ├── constants/             # Console constants (sizes, timings, themes)
+    │   └── utils/                 # Console helpers
     │       ├── sfx.ts             # Procedural Web Audio SFX
     │       └── assetResolver.ts   # Theme-aware asset loading
     │
@@ -232,9 +232,9 @@ frontend/
     │   └── users.ts               # User list (admin)
     │
     ├── services/                  # Data fetching & communication
-    │   ├── api/                   # 15 Axios API modules
+    │   ├── api/                   # 16 Axios API modules (+ index.ts client)
     │   │   ├── index.ts           # Axios instance (CSRF, interceptors)
-    │   │   ├── rom.ts             # ROM CRUD, upload, download (662 lines)
+    │   │   ├── rom.ts             # ROM CRUD, upload, download
     │   │   ├── platform.ts        # Platform CRUD
     │   │   ├── collection.ts      # Collection operations
     │   │   ├── user.ts            # User management
@@ -247,7 +247,8 @@ frontend/
     │   │   ├── screenshot.ts      # Screenshots
     │   │   ├── setup.ts           # Setup wizard
     │   │   ├── sgdb.ts            # SteamGridDB covers
-    │   │   ├── gamelist.ts        # Gamelist export
+    │   │   ├── export.ts          # Gamelist.xml + Pegasus exports
+    │   │   ├── play-session.ts    # Play session tracking
     │   │   └── client-token.ts    # API token management
     │   ├── cache/                 # Experimental response cache
     │   │   ├── index.ts           # Browser Cache API wrapper
@@ -302,7 +303,7 @@ frontend/
 
 ### Startup Sequence
 
-```
+```text
 index.html
   └── <script type="module" src="src/main.ts">
         │
@@ -321,7 +322,7 @@ index.html
 
 ### Plugin Registration Order
 
-```
+```text
 1. Vuetify     — Material Design components, themes, icons
 2. Pinia       — State management (with router injection)
 3. vue-i18n    — Internationalization (17 locales)
@@ -332,7 +333,7 @@ index.html
 
 ### Request Lifecycle
 
-```
+```text
 Component Action
     │
     ├─ Store Action (e.g., romsStore.fetchRoms())
@@ -365,7 +366,7 @@ Component Action
 
 ### Route Map
 
-```
+```text
 / (root)
 │
 ├── Auth Layout (public)
@@ -386,6 +387,7 @@ Component Action
 │   ├── /rom/:rom                 → Game details (8 tabs)
 │   ├── /rom/:rom/ejs             → EmulatorJS player
 │   ├── /rom/:rom/ruffle          → Ruffle Flash player
+│   ├── /april-fools              → April Fools easter egg (toggleable)
 │   ├── /scan                     → Library scanner [platforms.write]
 │   ├── /patcher                  → ROM patcher
 │   ├── /user/:user               → User profile
@@ -431,7 +433,7 @@ Component Action
 
 ### Store Overview
 
-```
+```text
 ┌─────────────────────────────────────────────────────┐
 │                   PINIA STORES                       │
 ├──────────────┬──────────────────────────────────────┤
@@ -548,27 +550,28 @@ const api = axios.create({
 
 ### API Service Modules
 
-| Module            | Key Endpoints                                    | Lines |
-| ----------------- | ------------------------------------------------ | ----- |
-| `rom.ts`          | CRUD, chunked upload, download, search, notes    | 662   |
-| `collection.ts`   | CRUD for regular/smart/virtual + ROM association | —     |
-| `platform.ts`     | CRUD, supported list                             | —     |
-| `user.ts`         | CRUD, profile, RA refresh, invite links          | —     |
-| `identity.ts`     | Login, logout, forgot/reset password             | —     |
-| `config.ts`       | Platform bindings, versions, exclusions          | —     |
-| `task.ts`         | List, status, run                                | —     |
-| `firmware.ts`     | Upload, list, delete                             | —     |
-| `save.ts`         | Upload, update, delete                           | —     |
-| `state.ts`        | Upload, update, delete                           | —     |
-| `screenshot.ts`   | Upload, update                                   | —     |
-| `setup.ts`        | Library structure, platform creation             | —     |
-| `sgdb.ts`         | Cover art search                                 | —     |
-| `gamelist.ts`     | Export gamelist.xml                              | —     |
-| `client-token.ts` | Token CRUD, pair, exchange                       | —     |
+| Module            | Key Endpoints                                    |
+| ----------------- | ------------------------------------------------ |
+| `rom.ts`          | CRUD, chunked upload, download, search, notes    |
+| `collection.ts`   | CRUD for regular/smart/virtual + ROM association |
+| `platform.ts`     | CRUD, supported list                             |
+| `user.ts`         | CRUD, profile, RA refresh, invite links          |
+| `identity.ts`     | Login, logout, forgot/reset password             |
+| `config.ts`       | Platform bindings, versions, exclusions          |
+| `task.ts`         | List, status, run                                |
+| `firmware.ts`     | Upload, list, delete                             |
+| `save.ts`         | Upload, update, delete                           |
+| `state.ts`        | Upload, update, delete                           |
+| `screenshot.ts`   | Upload, update                                   |
+| `setup.ts`        | Library structure, platform creation             |
+| `sgdb.ts`         | Cover art search                                 |
+| `export.ts`       | Gamelist.xml export, Pegasus export              |
+| `play-session.ts` | Play session ingestion & listing                 |
+| `client-token.ts` | Token CRUD, pair, exchange                       |
 
 ### Chunked Upload System (`rom.ts`)
 
-```
+```text
 1. POST /roms/upload/start
    Headers: X-Upload-Filename, X-Upload-Total-Size, X-Upload-Total-Chunks
    → Returns upload_id
@@ -587,7 +590,7 @@ On failure: POST /roms/upload/{upload_id}/cancel
 
 **ROM Gallery Loading:**
 
-```
+```text
 Component mount → romsStore.fetchRoms()
   → cachedApiService.getRoms(params, onBackgroundUpdate)
     → Cache hit? Return cached + background refresh
@@ -598,7 +601,7 @@ Component mount → romsStore.fetchRoms()
 
 **Filter & Search:**
 
-```
+```text
 User sets filter → galleryFilterStore.setSelected*()
   → Component detects change → romsStore.fetchRoms()
     → _buildRequestParams() merges all 13+ filter dimensions
@@ -608,7 +611,7 @@ User sets filter → galleryFilterStore.setSelected*()
 
 **Settings Sync:**
 
-```
+```text
 User changes setting → localStorage updated
   → useUISettings watcher fires
     → PUT /api/users/{id} with ui_settings JSON
@@ -625,7 +628,7 @@ User changes setting → localStorage updated
 
 **Feature-based hybrid** with three tiers:
 
-```
+```text
 Tier 1: Common (shared, reusable)
 ├── Collection/     Cards, list items, 6 dialogs
 ├── Dialog/         Loading, SearchCover
@@ -648,7 +651,7 @@ Tier 3: Console Mode
 
 ### Component Communication
 
-```
+```text
 ┌─────────────────┐     props/emit     ┌─────────────────┐
 │  Parent          │ ←───────────────→ │  Child           │
 │  Component       │                    │  Component       │
@@ -681,7 +684,7 @@ Tier 3: Console Mode
 
 All dialogs use Vuetify's `v-dialog` wrapped in a custom `RDialog` component:
 
-```
+```text
 RDialog (wrapper)
 ├── Header slot (title + close button)
 ├── Toolbar slot (optional)
@@ -758,7 +761,7 @@ A complete TV/gamepad-optimized interface under `/console/`.
 
 ### Architecture
 
-```
+```text
 Console Layout
 ├── Input Bus (keyboard + gamepad → actions)
 ├── Theme System (CSS variables per theme)
@@ -785,7 +788,7 @@ Console Layout
 
 ### Input System
 
-```
+```text
 Hardware Input (keyboard / gamepad)
     │
     ├── Keyboard Listener (keydown → action mapping)
@@ -977,7 +980,7 @@ io({
 
 **Opt-in:** `localStorage.settings.enableExperimentalCache`
 
-```
+```text
 Request Flow with Cache:
 ┌──────────┐    cache hit    ┌──────────┐
 │  Component├───────────────→│  Cached   │ → Immediate render

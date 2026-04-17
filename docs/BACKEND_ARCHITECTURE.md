@@ -55,7 +55,7 @@ RomM's backend is responsible for:
 
 ## 2. High-Level Architecture
 
-```
+```text
                                  +---------------------+
                                  |     Nginx / CDN     |
                                  |  (reverse proxy,    |
@@ -108,7 +108,7 @@ RomM's backend is responsible for:
 
 ### Layered Architecture
 
-```
+```text
 +-----------------------------------------------------------------------+
 |                         PRESENTATION LAYER                             |
 |  endpoints/          API route handlers, request/response schemas      |
@@ -140,7 +140,7 @@ RomM's backend is responsible for:
 
 ## 3. Directory Structure
 
-```
+```text
 backend/
 ├── main.py                    # FastAPI app creation, middleware, routers
 ├── startup.py                 # Pre-startup: cache init, scheduled tasks
@@ -158,11 +158,12 @@ backend/
 │       ├── steamgriddb.py     # SteamGridDB
 │       ├── retroachievements.py # RetroAchievements
 │       ├── rahasher.py        # RA hash computation
+│       ├── libretro_thumbnails.py # Libretro thumbnails (covers/screenshots)
 │       └── *_types.py         # Type definitions per adapter
 │
 ├── alembic/                   # Database migrations
 │   ├── env.py                 # Migration environment setup
-│   └── versions/              # 72+ migration scripts
+│   └── versions/              # 80+ migration scripts
 │
 ├── config/                    # Configuration system
 │   ├── __init__.py            # Env var loading (100+ variables)
@@ -180,17 +181,19 @@ backend/
 │   ├── collections.py         # Collection management
 │   ├── configs.py             # App configuration
 │   ├── device.py              # Device registration
+│   ├── export.py              # ES-DE gamelist.xml + Pegasus exports
 │   ├── feeds.py               # Tinfoil, WebRcade, PKGi feeds
 │   ├── firmware.py            # BIOS/firmware management
-│   ├── gamelist.py            # ES-DE gamelist export
 │   ├── heartbeat.py           # Health check + setup wizard
 │   ├── netplay.py             # Netplay room listing
+│   ├── play_sessions.py       # Play session ingestion & queries
 │   ├── raw.py                 # Raw asset file serving
 │   ├── saves.py               # Save file management
 │   ├── screenshots.py         # Screenshot management
 │   ├── search.py              # Cross-provider metadata search
 │   ├── states.py              # Save state management
 │   ├── stats.py               # Library statistics
+│   ├── sync.py                # Device sync sessions (push/pull, SSH)
 │   ├── tasks.py               # Task monitoring & triggering
 │   ├── roms/                  # ROM-specific endpoints
 │   │   ├── __init__.py        # ROM CRUD, download, bulk ops
@@ -231,46 +234,48 @@ backend/
 │   ├── database/              # Per-entity CRUD handlers
 │   │   ├── base_handler.py    # Engine, session factory
 │   │   ├── roms_handler.py    # ROM queries & mutations
-│   │   ├── platforms_handler.py
-│   │   ├── users_handler.py
-│   │   ├── saves_handler.py
-│   │   ├── states_handler.py
-│   │   ├── screenshots_handler.py
-│   │   ├── firmware_handler.py
-│   │   ├── collections_handler.py
-│   │   ├── devices_handler.py
-│   │   ├── device_save_sync_handler.py
-│   │   ├── client_tokens_handler.py
-│   │   └── stats_handler.py
+│   │   ├── platforms_handler.py     # Platform CRUD, slug mapping
+│   │   ├── users_handler.py         # User CRUD, role management
+│   │   ├── saves_handler.py         # Save slot grouping, sync state
+│   │   ├── states_handler.py        # Save state CRUD
+│   │   ├── screenshots_handler.py   # Screenshot CRUD
+│   │   ├── firmware_handler.py      # BIOS/firmware CRUD
+│   │   ├── collections_handler.py   # Regular/smart/virtual collections
+│   │   ├── devices_handler.py       # Device registration, fingerprinting
+│   │   ├── device_save_sync_handler.py # Cross-device save sync state
+│   │   ├── client_tokens_handler.py # API token hash lookup
+│   │   ├── play_sessions_handler.py # Play session ingest & aggregation
+│   │   ├── sync_sessions_handler.py # Sync session lifecycle
+│   │   └── stats_handler.py         # Library statistics
 │   ├── filesystem/            # File I/O operations
-│   │   ├── base_handler.py
-│   │   ├── roms_handler.py    # ROM file reading, hashing
-│   │   ├── assets_handler.py  # User assets storage
-│   │   ├── firmware_handler.py
-│   │   ├── platforms_handler.py
-│   │   └── resources_handler.py # Artwork caching
+│   │   ├── base_handler.py          # Path helpers, base class
+│   │   ├── roms_handler.py          # ROM file reading, hashing
+│   │   ├── assets_handler.py        # User assets storage
+│   │   ├── firmware_handler.py      # BIOS file I/O
+│   │   ├── platforms_handler.py     # Platform folder detection
+│   │   └── resources_handler.py     # Artwork caching
 │   └── metadata/              # Metadata provider handlers
-│       ├── base_handler.py    # Base metadata handler
-│       ├── igdb_handler.py
-│       ├── moby_handler.py
-│       ├── ss_handler.py      # ScreenScraper
-│       ├── sgdb_handler.py    # SteamGridDB
-│       ├── ra_handler.py      # RetroAchievements
-│       ├── hltb_handler.py    # HowLongToBeat
-│       ├── hasheous_handler.py
-│       ├── tgdb_handler.py    # TheGamesDB
-│       ├── flashpoint_handler.py
-│       ├── gamelist_handler.py # gamelist.xml parser
-│       ├── playmatch_handler.py
-│       ├── launchbox_handler/ # LaunchBox (local + remote)
-│       └── fixtures/          # Static metadata indexes
-│           ├── mame_index.json
-│           ├── scummvm_index.json
-│           ├── ps1_serial_index.json
-│           ├── ps2_serial_index.json
-│           ├── ps2_opl_index.json
-│           ├── psp_serial_index.json
-│           └── known_bios_files.json
+│       ├── base_handler.py          # Base metadata handler
+│       ├── igdb_handler.py          # IGDB provider
+│       ├── moby_handler.py          # MobyGames provider
+│       ├── ss_handler.py            # ScreenScraper
+│       ├── sgdb_handler.py          # SteamGridDB
+│       ├── ra_handler.py            # RetroAchievements
+│       ├── hltb_handler.py          # HowLongToBeat
+│       ├── hasheous_handler.py      # Hasheous hash-based lookup
+│       ├── tgdb_handler.py          # TheGamesDB
+│       ├── flashpoint_handler.py    # Flashpoint archive
+│       ├── gamelist_handler.py      # gamelist.xml parser
+│       ├── libretro_handler.py      # Libretro thumbnails DB lookup
+│       ├── playmatch_handler.py     # PlayMatch algorithm
+│       ├── launchbox_handler/       # LaunchBox (local + remote)
+│       └── fixtures/                # Static metadata indexes
+│           ├── mame_index.json          # MAME ROM → game info
+│           ├── scummvm_index.json       # ScummVM identification
+│           ├── ps1_serial_index.json    # PS1 serial → game
+│           ├── ps2_serial_index.json    # PS2 serial → game
+│           ├── ps2_opl_index.json       # PS2 OPL serials
+│           └── psp_serial_index.json    # PSP serial → game
 │
 ├── logger/                    # Logging setup
 │   ├── logger.py              # Logger instance ("romm")
@@ -287,21 +292,24 @@ backend/
 │   ├── device_save_sync.py    # DeviceSaveSync
 │   ├── firmware.py            # Firmware
 │   ├── client_token.py        # ClientToken
+│   ├── play_session.py        # PlaySession (per-user playtime tracking)
+│   ├── sync_session.py        # SyncSession (device sync coordination)
 │   └── fixtures/              # Seed data
-│       └── known_bios_files.json
+│       └── known_bios_files.json    # Verified BIOS hashes
 │
 ├── tasks/                     # Background job system
 │   ├── tasks.py               # Base Task, PeriodicTask classes
 │   ├── scheduled/             # Cron-scheduled tasks
-│   │   ├── scan_library.py
-│   │   ├── sync_retroachievements_progress.py
-│   │   ├── update_switch_titledb.py
-│   │   ├── update_launchbox_metadata.py
-│   │   ├── convert_images_to_webp.py
-│   │   └── cleanup_netplay.py
+│   │   ├── scan_library.py                    # Nightly library rescan
+│   │   ├── sync_retroachievements_progress.py # Pull RA user progress
+│   │   ├── update_switch_titledb.py           # Refresh Switch TitleDB
+│   │   ├── update_launchbox_metadata.py       # Refresh LaunchBox data
+│   │   ├── convert_images_to_webp.py          # Artwork WebP conversion
+│   │   └── cleanup_netplay.py                 # Prune stale netplay rooms
 │   └── manual/                # On-demand tasks
-│       ├── cleanup_missing_roms.py
-│       └── cleanup_orphaned_resources.py
+│       ├── cleanup_missing_roms.py       # Drop DB entries for missing files
+│       ├── cleanup_orphaned_resources.py # Remove unreferenced artwork
+│       └── sync_folder_scan.py           # Scan sync folder for new saves
 │
 ├── utils/                     # Shared helpers
 │   ├── __init__.py            # get_version()
@@ -341,7 +349,7 @@ backend/
 
 ### Startup Sequence
 
-```
+```text
 1. alembic upgrade head          # Run database migrations
 2. startup.main()                # Async startup tasks
    ├── Initialize scheduled jobs (RQ Scheduler)
@@ -365,7 +373,7 @@ backend/
 
 ### Middleware Stack (execution order, outside-in)
 
-```
+```text
 Request →  CORS → CSRF → Authentication → Session (Redis) → Context Vars → Endpoint
 Response ← CORS ← CSRF ← Authentication ← Session (Redis) ← Context Vars ← Endpoint
 ```
@@ -380,7 +388,7 @@ Response ← CORS ← CSRF ← Authentication ← Session (Redis) ← Context Va
 
 ### Request Flow
 
-```
+```text
 HTTP Request
     │
     ├─ Middleware processes request (auth, session, CSRF)
@@ -441,7 +449,7 @@ Constants: `FILE_NAME_MAX_LENGTH=450`, `FILE_PATH_MAX_LENGTH=1000`, `FILE_EXTENS
 
 ### Entity-Relationship Diagram
 
-```
+```text
                                     ┌──────────────┐
                           ┌────────>│  client_tokens│
                           │         └──────────────┘
@@ -557,7 +565,7 @@ Constants: `FILE_NAME_MAX_LENGTH=450`, `FILE_PATH_MAX_LENGTH=1000`, `FILE_EXTENS
 
 ---
 
-#### ROM Files
+#### ROM Files (table)
 
 **Table:** `rom_files`
 
@@ -729,7 +737,7 @@ Token format: `rmm_` + 64 hex chars (32-byte random)
 
 ### Alembic Migrations
 
-72+ migration scripts in `alembic/versions/`. Key milestones:
+80+ migration scripts in `alembic/versions/`. Key milestones:
 
 | Migration      | Description                               |
 | -------------- | ----------------------------------------- |
@@ -947,20 +955,24 @@ Migrations support batch mode for SQLite and DB-specific SQL for MariaDB/MySQL/P
 
 ### 6.15 Other Endpoints
 
-| Router    | Path                                   | Description                            |
-| --------- | -------------------------------------- | -------------------------------------- |
-| Heartbeat | `GET /api/heartbeat`                   | System info, version, metadata sources |
-| Heartbeat | `GET /api/heartbeat/metadata/{source}` | Check metadata provider health         |
-| Heartbeat | `GET /api/setup/library`               | Library structure info (wizard)        |
-| Heartbeat | `POST /api/setup/platforms`            | Create platform folders (wizard)       |
-| Stats     | `GET /api/stats`                       | Library statistics                     |
-| Raw       | `HEAD /api/raw/assets/{path}`          | Check asset existence                  |
-| Raw       | `GET /api/raw/assets/{path}`           | Serve raw asset file                   |
-| Firmware  | Standard CRUD                          | BIOS file management                   |
-| Gamelist  | `POST /api/gamelist/export`            | Export gamelist.xml                    |
-| Netplay   | `GET /api/netplay/list`                | List netplay rooms                     |
+| Router        | Path                                   | Description                            |
+| ------------- | -------------------------------------- | -------------------------------------- |
+| Heartbeat     | `GET /api/heartbeat`                   | System info, version, metadata sources |
+| Heartbeat     | `GET /api/heartbeat/metadata/{source}` | Check metadata provider health         |
+| Heartbeat     | `GET /api/setup/library`               | Library structure info (wizard)        |
+| Heartbeat     | `POST /api/setup/platforms`            | Create platform folders (wizard)       |
+| Stats         | `GET /api/stats`                       | Library statistics                     |
+| Raw           | `HEAD /api/raw/assets/{path}`          | Check asset existence                  |
+| Raw           | `GET /api/raw/assets/{path}`           | Serve raw asset file                   |
+| Firmware      | Standard CRUD                          | BIOS file management                   |
+| Export        | `POST /api/export/gamelist-xml`        | Export ES-DE gamelist.xml              |
+| Export        | `POST /api/export/pegasus`             | Export Pegasus frontend metadata       |
+| Netplay       | `GET /api/netplay/list`                | List netplay rooms                     |
+| Play Sessions | `POST /api/play-sessions`              | Ingest play session from client        |
+| Play Sessions | `GET /api/play-sessions`               | List play sessions (per user / ROM)    |
+| Sync          | `/api/sync/*`                          | Device sync session coordination       |
 
-**Total: 110+ endpoints**
+The codebase exposes roughly **175 HTTP routes** and **11 WebSocket handlers** across 24 routers.
 
 ---
 
@@ -968,7 +980,7 @@ Migrations support batch mode for SQLite and DB-specific SQL for MariaDB/MySQL/P
 
 ### Authentication Methods
 
-```
+```text
 ┌──────────────────────────────────────────────────────────────┐
 │                    HybridAuthBackend                          │
 │                                                              │
@@ -1012,7 +1024,7 @@ Migrations support batch mode for SQLite and DB-specific SQL for MariaDB/MySQL/P
 
 ### Scope Definitions
 
-```
+```text
 me.read / me.write           — Own profile
 roms.read / roms.write       — ROM data
 platforms.read / platforms.write — Platform data
@@ -1059,7 +1071,7 @@ The core of RomM — orchestrates library scanning and metadata enrichment.
 
 **Scan Flow:**
 
-```
+```text
 1. Detect platform folders in LIBRARY_BASE_PATH
 2. For each platform:
    ├── Map filesystem slug to canonical platform (via config bindings)
@@ -1107,6 +1119,8 @@ Each entity has a dedicated handler providing CRUD operations:
 | `db_devices_handler`          | Fingerprint deduplication                                                          |
 | `db_device_save_sync_handler` | Cross-device sync state                                                            |
 | `db_client_tokens_handler`    | Hash-based lookup, scope management                                                |
+| `db_play_sessions_handler`    | Play session ingestion and aggregation                                             |
+| `db_sync_sessions_handler`    | Device sync session lifecycle (push/pull, SSH)                                     |
 
 ### 8.3 Metadata Handlers (`handler/metadata/`)
 
@@ -1124,6 +1138,7 @@ Each external provider has a handler that normalizes data into a common format:
 | `tgdb_handler`       | TheGamesDB        | Alternative metadata                       |
 | `flashpoint_handler` | Flashpoint        | Browser game archive                       |
 | `gamelist_handler`   | gamelist.xml      | ES-DE format parser                        |
+| `libretro_handler`   | Libretro          | Libretro thumbnails DB                     |
 | `playmatch_handler`  | PlayMatch         | Game matching algorithm                    |
 | `launchbox_handler/` | LaunchBox         | Local + remote database, media             |
 
@@ -1164,7 +1179,15 @@ NetplayRoom:
     max_players: int
 ```
 
-### 8.6 Socket Handler (`handler/socket_handler.py`)
+### 8.6 Play Sessions
+
+Tracks per-user playtime events ingested from clients (web player, console mode, external launchers) via `POST /api/play-sessions`. Persisted in `play_sessions` table; aggregated into user profile stats and recent-activity feeds.
+
+### 8.7 Device Sync Sessions
+
+Coordinates save/state synchronization between devices using three sync modes (`API`, `FILE_TRANSFER`, `PUSH_PULL`). `SyncSession` tracks the lifecycle of a push/pull operation (including optional SSH-based file transfer — see `SYNC_SSH_*` env vars). Endpoints live in `endpoints/sync.py`; state is stored in the `sync_sessions` table.
+
+### 8.8 Socket Handler (`handler/socket_handler.py`)
 
 Manages two Socket.IO servers:
 
@@ -1249,25 +1272,25 @@ Each adapter wraps an external API with authentication, retry logic, and type sa
 
 ### Static Fixture Data
 
-Cached in Redis at startup from JSON files in `handler/metadata/fixtures/`:
+Cached in Redis at startup from JSON files:
 
-| Fixture                 | Purpose                          |
-| ----------------------- | -------------------------------- |
-| `mame_index.json`       | MAME ROM name → game info        |
-| `scummvm_index.json`    | ScummVM game identification      |
-| `ps1_serial_index.json` | PS1 serial code → game mapping   |
-| `ps2_serial_index.json` | PS2 serial code → game mapping   |
-| `ps2_opl_index.json`    | PS2 OPL serial codes             |
-| `psp_serial_index.json` | PSP serial code → game mapping   |
-| `known_bios_files.json` | Verified BIOS file hashes (66KB) |
+| Fixture                 | Location                     | Purpose                        |
+| ----------------------- | ---------------------------- | ------------------------------ |
+| `mame_index.json`       | `handler/metadata/fixtures/` | MAME ROM name → game info      |
+| `scummvm_index.json`    | `handler/metadata/fixtures/` | ScummVM game identification    |
+| `ps1_serial_index.json` | `handler/metadata/fixtures/` | PS1 serial code → game mapping |
+| `ps2_serial_index.json` | `handler/metadata/fixtures/` | PS2 serial code → game mapping |
+| `ps2_opl_index.json`    | `handler/metadata/fixtures/` | PS2 OPL serial codes           |
+| `psp_serial_index.json` | `handler/metadata/fixtures/` | PSP serial code → game mapping |
+| `known_bios_files.json` | `models/fixtures/`           | Verified BIOS file hashes      |
 
 ---
 
 ## 10. Real-Time Communication (WebSockets)
 
-### Architecture
+### Socket Architecture
 
-```
+```text
 Client  ←──Socket.IO──→  FastAPI (python-socketio)  ←──Redis PubSub──→  Workers
 ```
 
@@ -1331,6 +1354,7 @@ Triggered via `POST /api/tasks/run/{task_name}`:
 | ---------------------------- | --------------------------------------------- |
 | `cleanup_missing_roms`       | Remove DB entries for files no longer on disk |
 | `cleanup_orphaned_resources` | Remove unused artwork/resource files          |
+| `sync_folder_scan`           | Scan sync folder for new device saves         |
 
 ### Filesystem Watcher
 
@@ -1344,7 +1368,7 @@ Uses `watchfiles` to monitor the library directory for changes. When enabled (`E
 
 ### Directory Layout
 
-```
+```text
 {ROMM_BASE_PATH}/                    # Default: /romm
 ├── library/                         # ROM files, organized by platform
 │   ├── n64/
@@ -1401,7 +1425,7 @@ Hashing can be disabled per-installation via `skip_hash_calculation` in config.y
 
 ## 13. Caching (Redis)
 
-### Architecture
+### Cache Architecture
 
 Two Redis client instances:
 
@@ -1464,6 +1488,7 @@ Falls back to `FakeRedis` in test mode.
 | ---------------- | ----------- | --------------------- |
 | `REDIS_HOST`     | `127.0.0.1` | Redis host            |
 | `REDIS_PORT`     | `6379`      | Redis port            |
+| `REDIS_USERNAME` | —           | Redis username (ACL)  |
 | `REDIS_PASSWORD` | —           | Redis password        |
 | `REDIS_DB`       | `0`         | Redis database number |
 | `REDIS_SSL`      | `false`     | Enable SSL            |
@@ -1483,16 +1508,19 @@ Falls back to `FakeRedis` in test mode.
 
 #### OIDC
 
-| Variable                        | Default              | Description           |
-| ------------------------------- | -------------------- | --------------------- |
-| `OIDC_ENABLED`                  | `false`              | Enable OpenID Connect |
-| `OIDC_PROVIDER`                 | —                    | Provider URL          |
-| `OIDC_CLIENT_ID`                | —                    | Client ID             |
-| `OIDC_CLIENT_SECRET`            | —                    | Client secret         |
-| `OIDC_REDIRECT_URI`             | —                    | Redirect URI          |
-| `OIDC_USERNAME_ATTRIBUTE`       | `preferred_username` | Username claim        |
-| `OIDC_CLAIM_ROLES`              | —                    | Roles claim name      |
-| `OIDC_ROLE_VIEWER/EDITOR/ADMIN` | —                    | Role mappings         |
+| Variable                        | Default              | Description                     |
+| ------------------------------- | -------------------- | ------------------------------- |
+| `OIDC_ENABLED`                  | `false`              | Enable OpenID Connect           |
+| `OIDC_PROVIDER`                 | —                    | Provider URL                    |
+| `OIDC_CLIENT_ID`                | —                    | Client ID                       |
+| `OIDC_CLIENT_SECRET`            | —                    | Client secret                   |
+| `OIDC_REDIRECT_URI`             | —                    | Redirect URI                    |
+| `OIDC_USERNAME_ATTRIBUTE`       | `preferred_username` | Username claim                  |
+| `OIDC_CLAIM_ROLES`              | —                    | Roles claim name                |
+| `OIDC_ROLE_VIEWER/EDITOR/ADMIN` | —                    | Role mappings                   |
+| `OIDC_TLS_CACERTFILE`           | —                    | Custom CA bundle for OIDC calls |
+| `OIDC_RP_INITIATED_LOGOUT`      | `false`              | Send logout to OIDC provider    |
+| `OIDC_END_SESSION_ENDPOINT`     | —                    | End-session URL override        |
 
 #### API Keys
 
@@ -1506,25 +1534,43 @@ Falls back to `FakeRedis` in test mode.
 
 #### Feature Toggles
 
-| Variable                 | Default | Description             |
-| ------------------------ | ------- | ----------------------- |
-| `LAUNCHBOX_API_ENABLED`  | `false` | LaunchBox metadata      |
-| `PLAYMATCH_API_ENABLED`  | `false` | PlayMatch matching      |
-| `HASHEOUS_API_ENABLED`   | `false` | Hasheous identification |
-| `TGDB_API_ENABLED`       | `false` | TheGamesDB              |
-| `FLASHPOINT_API_ENABLED` | `false` | Flashpoint archive      |
-| `HLTB_API_ENABLED`       | `false` | HowLongToBeat           |
+| Variable                 | Default | Description              |
+| ------------------------ | ------- | ------------------------ |
+| `LAUNCHBOX_API_ENABLED`  | `false` | LaunchBox metadata       |
+| `PLAYMATCH_API_ENABLED`  | `false` | PlayMatch matching       |
+| `HASHEOUS_API_ENABLED`   | `false` | Hasheous identification  |
+| `TGDB_API_ENABLED`       | `false` | TheGamesDB               |
+| `FLASHPOINT_API_ENABLED` | `false` | Flashpoint archive       |
+| `HLTB_API_ENABLED`       | `false` | HowLongToBeat            |
+| `DISABLE_EMULATOR_JS`    | `false` | Hide EmulatorJS player   |
+| `DISABLE_RUFFLE_RS`      | `false` | Hide Ruffle Flash player |
 
 #### Task Scheduling
 
-| Variable                             | Default     | Description              |
-| ------------------------------------ | ----------- | ------------------------ |
-| `SCAN_TIMEOUT`                       | `14400`     | 4-hour scan timeout      |
-| `SCAN_WORKERS`                       | `1`         | Concurrent scan workers  |
-| `ENABLE_SCHEDULED_RESCAN`            | `false`     | Auto library rescan      |
-| `SCHEDULED_RESCAN_CRON`              | `0 3 * * *` | Rescan schedule          |
-| `ENABLE_RESCAN_ON_FILESYSTEM_CHANGE` | `false`     | Watch for file changes   |
-| `RESCAN_ON_FILESYSTEM_CHANGE_DELAY`  | `5`         | Debounce delay (minutes) |
+| Variable                               | Default     | Description                     |
+| -------------------------------------- | ----------- | ------------------------------- |
+| `SCAN_TIMEOUT`                         | `14400`     | 4-hour scan timeout             |
+| `SCAN_WORKERS`                         | `1`         | Concurrent scan workers         |
+| `TASK_TIMEOUT`                         | —           | RQ job timeout for manual tasks |
+| `TASK_RESULT_TTL`                      | —           | How long to keep job results    |
+| `ENABLE_SCHEDULED_RESCAN`              | `false`     | Auto library rescan             |
+| `SCHEDULED_RESCAN_CRON`                | `0 3 * * *` | Rescan schedule                 |
+| `ENABLE_RESCAN_ON_FILESYSTEM_CHANGE`   | `false`     | Watch for file changes          |
+| `RESCAN_ON_FILESYSTEM_CHANGE_DELAY`    | `5`         | Debounce delay (minutes)        |
+| `SEVEN_ZIP_TIMEOUT`                    | —           | Timeout for 7-Zip extraction    |
+| `REFRESH_RETROACHIEVEMENTS_CACHE_DAYS` | —           | RA cache TTL (days)             |
+
+#### Device Sync
+
+| Variable                          | Default | Description                       |
+| --------------------------------- | ------- | --------------------------------- |
+| `ENABLE_SYNC_FOLDER_WATCHER`      | `false` | Watch sync folder for new saves   |
+| `SYNC_FOLDER_SCAN_DELAY`          | —       | Debounce for sync folder scans    |
+| `ENABLE_SYNC_PUSH_PULL`           | `false` | Enable scheduled push/pull sync   |
+| `SYNC_PUSH_PULL_CRON`             | —       | Cron schedule for push/pull       |
+| `SYNC_SSH_HOST` / `SYNC_SSH_PORT` | —       | SSH target for FILE_TRANSFER sync |
+| `SYNC_SSH_USERNAME`               | —       | SSH user                          |
+| `SYNC_SSH_PRIVATE_KEY_PATH`       | —       | SSH private key path              |
 
 ### YAML Configuration (`config.yml`)
 
@@ -1580,7 +1626,7 @@ Managed by `ConfigManager` (singleton pattern) which reads, validates, and write
 
 ### Exception Hierarchy
 
-```
+```text
 Exception
 ├── AuthCredentialsException          # 401 — Incorrect credentials
 ├── AuthenticationSchemeException      # 401 — Invalid auth scheme
@@ -1634,7 +1680,7 @@ Exception
 
 ### Format
 
-```
+```text
 [LEVEL]: [RomM][module] [timestamp] message
 ```
 
@@ -1677,7 +1723,7 @@ Color behavior:
 
 Tests mirror the backend directory structure under `tests/`:
 
-```
+```text
 tests/
 ├── conftest.py                    # Shared fixtures
 ├── adapters/services/             # API adapter tests
