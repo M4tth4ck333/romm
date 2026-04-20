@@ -25,7 +25,7 @@ const scanningStore = storeScanning();
 const configStore = storeConfig();
 const { config } = storeToRefs(configStore);
 
-const calculateHashes = computed(() => !config.value.SKIP_HASH_CALCULATION || false);
+const calculateHashes = computed(() => !config.value.SKIP_HASH_CALCULATION);
 
 const metadataOptions = computed(() => {
   return heartbeat.getMetadataOptionsByPriority().map((option) => {
@@ -58,10 +58,13 @@ const launchboxRemoteEnabled = useLocalStorage(
   true,
 );
 
+const filteredMetadataSources = metadataOptions.value.filter(
+  (m) => storedMetadataSources.value.includes(m.value) && !m.disabled,
+);
 const metadataSources = ref<MetadataOption[]>(
-  metadataOptions.value.filter(
-    (m) => storedMetadataSources.value.includes(m.value) && !m.disabled,
-  ) || heartbeat.getEnabledMetadataOptions(),
+  filteredMetadataSources.length > 0
+    ? filteredMetadataSources
+    : heartbeat.getEnabledMetadataOptions(),
 );
 
 const isLaunchboxSelected = computed(() =>
