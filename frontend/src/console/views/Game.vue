@@ -350,7 +350,7 @@ function handleAction(action: InputAction): boolean {
   }
 }
 
-function play() {
+async function play() {
   if (!rom.value) return;
 
   romApi
@@ -375,11 +375,14 @@ function play() {
   if (origin.id) query.id = Number(origin.id);
   if (origin.collection) query.collection = Number(origin.collection);
 
-  router.push({
+  await router.push({
     name: ROUTES.CONSOLE_PLAY,
     params: { rom: rom.value.id },
     query: Object.keys(query).length ? query : undefined,
   });
+  // Force full reload to retrieve COEP/COOP headers from nginx,
+  // required to enable multi-threading in EmulatorJS (e.g., for dosbox_pure/MSDOS).
+  router.go(0);
 }
 
 const currentStateId = computed(

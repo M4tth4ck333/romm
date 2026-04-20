@@ -5,6 +5,7 @@ import {
   computed,
   onMounted,
   onBeforeUnmount,
+  onUnmounted,
   ref,
   watch,
   nextTick,
@@ -736,6 +737,11 @@ onBeforeUnmount(() => {
   window.EJS_emulator?.callEvent?.("exit");
   detachKey?.();
   detachPad?.();
+});
+
+onUnmounted(() => {
+  // Force full reload to reset COEP/COOP, so cross-origin isolation is turned off.
+  window.location.reload();
 });
 </script>
 
