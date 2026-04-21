@@ -182,6 +182,11 @@ class PlaymatchHandler(MetadataHandler):
 
         return PlaymatchRomMatch(igdb_id=igdb_id)
 
+    @staticmethod
+    def is_manual_match(form_fields_set: set[str]) -> bool:
+        """True if the submitted form contains any Playmatch-tracked provider id field."""
+        return any(attr in form_fields_set for attr, _ in _PLAYMATCH_PROVIDER_TAGS)
+
     async def submit_manual_match_suggestion(self, rom: Rom) -> None:
         """Fire-and-forget suggestion POST. No-ops if disabled or no provider IDs are set; never raises."""
         try:

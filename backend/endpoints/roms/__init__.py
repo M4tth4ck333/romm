@@ -1452,7 +1452,8 @@ async def update_rom(
     if not rom:
         raise RomNotFoundInDatabaseException(id)
 
-    _fire_and_forget(meta_playmatch_handler.submit_manual_match_suggestion(rom))
+    if meta_playmatch_handler.is_manual_match(form_data.model_fields_set):
+        _fire_and_forget(meta_playmatch_handler.submit_manual_match_suggestion(rom))
 
     return DetailedRomSchema.from_orm_with_request(rom, request)
 
