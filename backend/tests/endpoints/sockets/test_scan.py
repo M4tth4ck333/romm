@@ -101,6 +101,8 @@ class TestShouldScanRom:
         """COMPLETE should scan everything when unscoped, but respect roms_ids when scoped"""
         assert _should_scan_rom(ScanType.COMPLETE, None, [], ["igdb"]) is True
         assert _should_scan_rom(ScanType.COMPLETE, rom, [], ["igdb"]) is True
+        # Scoped scan should not scan/add new filesystem ROMs when rom is None
+        assert _should_scan_rom(ScanType.COMPLETE, None, [rom.id], ["igdb"]) is False
         # Scoped scan: rom not in list → skip even for COMPLETE
         assert (
             _should_scan_rom(ScanType.COMPLETE, rom, [rom.id + 99], ["igdb"]) is False
@@ -112,6 +114,8 @@ class TestShouldScanRom:
         """HASHES should scan everything when unscoped, but respect roms_ids when scoped"""
         assert _should_scan_rom(ScanType.HASHES, None, [], ["igdb"]) is True
         assert _should_scan_rom(ScanType.HASHES, rom, [], ["igdb"]) is True
+        # Scoped scan should not scan/add new filesystem ROMs when rom is None
+        assert _should_scan_rom(ScanType.HASHES, None, [rom.id], ["igdb"]) is False
         # Scoped scan: rom not in list → skip even for HASHES
         assert _should_scan_rom(ScanType.HASHES, rom, [rom.id + 99], ["igdb"]) is False
         assert _should_scan_rom(ScanType.HASHES, rom, [rom.id], ["igdb"]) is True

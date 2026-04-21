@@ -160,8 +160,8 @@ def _should_scan_rom(
     """
 
     # When roms_ids is provided, the scan is scoped to those roms only
-    if rom and roms_ids:
-        return bool(rom.id in roms_ids)
+    if roms_ids:
+        return bool(rom and rom.id in roms_ids)
 
     # This logic is tricky so only touch it if you know what you're doing"""
     should_scan = bool(
