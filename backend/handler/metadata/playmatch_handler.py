@@ -183,7 +183,7 @@ class PlaymatchHandler(MetadataHandler):
         return PlaymatchRomMatch(igdb_id=igdb_id)
 
     async def submit_manual_match_suggestion(self, rom: Rom) -> None:
-        """Fire-and-forget suggestion POST. No-ops if disabled or unmatched; never raises."""
+        """Fire-and-forget suggestion POST. No-ops if disabled or no provider IDs are set; never raises."""
         try:
             if not self.is_enabled():
                 return
@@ -191,7 +191,7 @@ class PlaymatchHandler(MetadataHandler):
             mappings = [
                 {"provider": tag, "providerId": str(getattr(rom, attr))}
                 for attr, tag in _PLAYMATCH_PROVIDER_TAGS
-                if getattr(rom, attr, None) not in (None, "")
+                if getattr(rom, attr, None)
             ]
             if not mappings:
                 return
@@ -221,11 +221,12 @@ class PlaymatchHandler(MetadataHandler):
             }
 
             httpx_client = ctx_httpx_client.get()
-            await httpx_client.post(
+            res = await httpx_client.post(
                 self.suggestion_url,
                 json=payload,
                 headers={"user-agent": f"RomM/{get_version()}"},
                 timeout=30,
             )
+            res.raise_for_status()
         except Exception:
             log.debug("Playmatch match suggestion failed (ignored)", exc_info=True)
