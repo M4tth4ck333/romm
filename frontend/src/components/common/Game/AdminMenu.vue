@@ -51,7 +51,6 @@ async function resetLastPlayed() {
       return;
     });
 }
-
 </script>
 
 <template>
@@ -65,7 +64,7 @@ async function resetLastPlayed() {
         <v-list-item-title class="d-flex">
           <v-icon icon="mdi-search-web" class="mr-2" />{{
             t("rom.manual-match")
-          }}
+          }}…
         </v-list-item-title>
         <v-list-item-subtitle>
           {{
@@ -80,14 +79,17 @@ async function resetLastPlayed() {
         @click="emitter?.emit('showEditRomDialog', rom)"
       >
         <v-list-item-title class="d-flex">
-          <v-icon icon="mdi-pencil-box" class="mr-2" />{{ t("common.edit") }}
+          <v-icon icon="mdi-pencil-box" class="mr-2" />{{ t("common.edit") }}…
         </v-list-item-title>
       </v-list-item>
-      <v-list-item class="py-4 pr-5" @click="emitter?.emit('showRefreshMetadataDialog', rom)">
+      <v-list-item
+        class="py-4 pr-5"
+        @click="emitter?.emit('showRefreshMetadataDialog', rom)"
+      >
         <v-list-item-title class="d-flex">
           <v-icon icon="mdi-magnify-scan" class="mr-2" />{{
             t("rom.refresh-metadata")
-          }}
+          }}…
         </v-list-item-title>
       </v-list-item>
       <v-divider />
@@ -130,7 +132,7 @@ async function resetLastPlayed() {
       <v-list-item-title class="d-flex">
         <v-icon icon="mdi-bookmark-plus" class="mr-2" />{{
           t("rom.add-to-collection")
-        }}
+        }}…
       </v-list-item-title>
     </v-list-item>
     <v-list-item
@@ -141,7 +143,7 @@ async function resetLastPlayed() {
       <v-list-item-title class="d-flex">
         <v-icon icon="mdi-bookmark-remove-outline" class="mr-2" />{{
           t("rom.remove-from-collection")
-        }}
+        }}…
       </v-list-item-title>
     </v-list-item>
     <template v-if="auth.scopes.includes('roms.write')">
@@ -151,7 +153,7 @@ async function resetLastPlayed() {
         @click="emitter?.emit('showDeleteRomDialog', [rom])"
       >
         <v-list-item-title class="d-flex">
-          <v-icon icon="mdi-delete" class="mr-2" />{{ t("rom.delete") }}
+          <v-icon icon="mdi-delete" class="mr-2" />{{ t("rom.delete") }}…
         </v-list-item-title>
       </v-list-item>
     </template>

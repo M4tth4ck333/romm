@@ -159,6 +159,10 @@ def _should_scan_rom(
         metadata_sources (list[str]): List of metadata sources to be used.
     """
 
+    # When roms_ids is provided, the scan is scoped to those roms only
+    if rom and roms_ids:
+        return bool(rom.id in roms_ids)
+
     # This logic is tricky so only touch it if you know what you're doing"""
     should_scan = bool(
         # Any new roms should be scanned
@@ -170,10 +174,8 @@ def _should_scan_rom(
         or (
             rom
             and (
-                # Selected ROMs are always scanned
-                (rom.id in roms_ids)
                 # Update scan should scan ROMs identified by the selected metadata sources
-                or (
+                (
                     scan_type == ScanType.UPDATE
                     and rom.is_identified
                     and any(getattr(rom, f"{source}_id") for source in metadata_sources)

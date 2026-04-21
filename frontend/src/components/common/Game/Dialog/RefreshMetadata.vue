@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { useLocalStorage } from "@vueuse/core";
 import type { Emitter } from "mitt";
+import { storeToRefs } from "pinia";
 import { computed, inject, onBeforeUnmount, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
-import { storeToRefs } from "pinia";
 import RDialog from "@/components/common/RDialog.vue";
 import socket from "@/services/socket";
 import storeConfig from "@/stores/config";
@@ -79,11 +79,6 @@ watch(metadataOptions, (newOptions) => {
 
 const scanOptions = computed(() => [
   {
-    title: t("scan.quick-scan"),
-    subtitle: t("scan.quick-scan-desc"),
-    value: "quick",
-  },
-  {
     title: t("scan.unmatched-games"),
     subtitle: t("scan.unmatched-games-desc"),
     value: "unmatched",
@@ -94,12 +89,17 @@ const scanOptions = computed(() => [
     value: "update",
   },
   {
+    title: t("scan.hashes"),
+    subtitle: t("scan.hashes-desc"),
+    value: "hashes",
+  },
+  {
     title: t("scan.complete-rescan"),
     subtitle: t("scan.complete-rescan-desc"),
     value: "complete",
   },
 ]);
-const scanType = ref("quick");
+const scanType = ref("unmatched");
 
 const handleShowRefreshMetadataDialog = (romToRefresh: SimpleRom) => {
   rom.value = romToRefresh;
@@ -193,10 +193,7 @@ function closeDialog() {
                   </v-avatar>
                 </template>
 
-                <template
-                  v-if="item.raw.value === 'launchbox'"
-                  #append
-                >
+                <template v-if="item.raw.value === 'launchbox'" #append>
                   <div class="d-flex align-center">
                     <span
                       class="text-caption text-primary text-medium-emphasis mr-4"
