@@ -58,24 +58,25 @@ const launchboxRemoteEnabled = useLocalStorage(
   true,
 );
 
-const filteredMetadataSources = metadataOptions.value.filter(
-  (m) => storedMetadataSources.value.includes(m.value) && !m.disabled,
-);
-const metadataSources = ref<MetadataOption[]>(
-  filteredMetadataSources.length > 0
-    ? filteredMetadataSources
-    : heartbeat.getEnabledMetadataOptions(),
-);
-
+const metadataSources = ref<MetadataOption[]>([]);
 const isLaunchboxSelected = computed(() =>
   metadataSources.value.some((s) => s.value === "launchbox"),
 );
 
-watch(metadataOptions, (newOptions) => {
-  metadataSources.value = metadataSources.value.filter((s) =>
-    newOptions.some((opt) => opt.value === s.value && !opt.disabled),
-  );
-});
+watch(
+  [metadataOptions, storedMetadataSources],
+  ([newOptions, newStoredMetadataSources]) => {
+    const filteredMetadataSources = newOptions.filter(
+      (option) =>
+        newStoredMetadataSources.includes(option.value) && !option.disabled,
+    );
+    metadataSources.value =
+      filteredMetadataSources.length > 0
+        ? filteredMetadataSources
+        : heartbeat.getEnabledMetadataOptions();
+  },
+  { immediate: true },
+);
 
 const scanOptions = computed(() => [
   {
